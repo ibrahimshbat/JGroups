@@ -1,0 +1,1 @@
+It works for N=3 and 5. The result used for ValueTool paper. 
