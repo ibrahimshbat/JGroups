@@ -1,4 +1,4 @@
-package org.jgroups.protocols.jzookeeper.zabCTwaittimezero;
+package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
 
 import java.io.BufferedWriter;
 import java.io.DataInput;

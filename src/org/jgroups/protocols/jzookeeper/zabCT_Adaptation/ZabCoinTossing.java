@@ -1,4 +1,4 @@
-package org.jgroups.protocols.jzookeeper.zabCTwaittimezero;
+package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;

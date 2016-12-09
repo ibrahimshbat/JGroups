@@ -1,4 +1,4 @@
-package org.jgroups.protocols.jzookeeper.zabCTwaittimezero;
+package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
 
 import org.jgroups.Global;
 import org.jgroups.Header;
