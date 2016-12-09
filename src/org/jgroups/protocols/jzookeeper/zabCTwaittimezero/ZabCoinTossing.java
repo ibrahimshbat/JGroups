@@ -93,6 +93,9 @@ public class ZabCoinTossing extends Protocol {
 	//private boolean ackedNextProposal=false;
 	private static String info = null;
 	private static int thshot = 9950;
+	private Timer measureXd = new Timer();		
+	private AtomicLong propArrivalRate = new AtomicLong(0);// Next arrival proposal time
+
 
 
 
@@ -138,6 +141,7 @@ public class ZabCoinTossing extends Protocol {
 		this.pW=this.stats.findpW(N, zabMembers.size());
 		if(!is_leader){
 			timerForTail.schedule(new TailTimeOutTask(), 5, 2000);//For tail proposal timeout
+			measureXd.schedule(new MeasuePropArrivalRate(), 5, 1000);//For tail proposal timeout
 			log.info("Starting Task");
 			log.info("I am Follower");
 		}
@@ -857,5 +861,21 @@ public class ZabCoinTossing extends Protocol {
 
 	}
 
+	class MeasuePropArrivalRate extends TimerTask {
+		private int lastNumProposal=0;
+		long sum=0;
+		long avgd=0;
+		public MeasuePropArrivalRate() {
 
+		}
+
+		@Override
+		public void run() {
+			lastNumProposal = (stats.numProposal.get()-stats.lastNumProposal.get());
+			propArrivalRate.set((long) (1000000/lastNumProposal));
+			stats.lastNumProposal.set(stats.numProposal.get());
+		}
+
+	}
+	
 }

@@ -71,7 +71,8 @@ public class ProtocolStats {
 	public int maxTailTimeout = Integer.MIN_VALUE;
 	public String dirTestType=null;
 	public String info=null;
-
+	public AtomicInteger numProposal;
+	public AtomicInteger lastNumProposal;
 
 
 
