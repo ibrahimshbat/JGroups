@@ -46,7 +46,7 @@ public class CSInteraction extends Protocol {
 
 
 	@Property(name = "Zab_size", description = "It is Zab cluster size")
-	private int clusterSize = 9;
+	private int clusterSize = 5;
 
 	private View view = null;
 

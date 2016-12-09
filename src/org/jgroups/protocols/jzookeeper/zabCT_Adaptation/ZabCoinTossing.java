@@ -139,6 +139,7 @@ public class ZabCoinTossing extends Protocol {
 
 		//zUnit.setP(1.0);
 		this.pW=this.stats.findpW(N, zabMembers.size());
+		log.info("pW====="+this.pW);
 		if(!is_leader){
 			timerForTail.schedule(new TailTimeOutTask(), 5, 2000);//For tail proposal timeout
 			measureXd.schedule(new MeasuePropArrivalRate(), 5, 1000);//For tail proposal timeout
@@ -197,6 +198,7 @@ public class ZabCoinTossing extends Protocol {
 				queuedMessages.add(hdr);
 				break;
 			case ZabCoinTossingHeader.PROPOSAL:
+				stats.numProposal.incrementAndGet();
 				sendACK(msg, hdr);
 				break;          		
 			case ZabCoinTossingHeader.ACK:
@@ -872,7 +874,12 @@ public class ZabCoinTossing extends Protocol {
 		@Override
 		public void run() {
 			lastNumProposal = (stats.numProposal.get()-stats.lastNumProposal.get());
-			propArrivalRate.set((long) (1000000/lastNumProposal));
+			log.info("Number of Proposal arrival="+lastNumProposal);
+			propArrivalRate.set((long) (1/lastNumProposal));
+			log.info("Proposal arrival rate="+propArrivalRate.get()+" /d="+d);
+			log.info("p-->W=:"+pW);
+
+
 			stats.lastNumProposal.set(stats.numProposal.get());
 		}
 

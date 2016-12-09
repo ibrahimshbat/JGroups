@@ -117,6 +117,8 @@ public class ProtocolStats {
 		countTail = new AtomicInteger(0);
 		countTotalMessagesFollowers = new AtomicInteger(0);
 		this.countDummyCall = new AtomicInteger(0);
+		this.numProposal = new AtomicInteger(0);
+		this.lastNumProposal =  new AtomicInteger(0);
 		this.is_warmup = stopWarmup;
 		this.outDir = outDir;
 		this.info = info;
