@@ -30,6 +30,8 @@ import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.stack.Protocol;
 
+import com.google.common.util.concurrent.AtomicDouble;
+
 
 /* 
  * Zab_3 (main approach ) is the same implementation as Zab_2.
@@ -94,7 +96,7 @@ public class ZabCoinTossing extends Protocol {
 	private static String info = null;
 	private static int thshot = 9950;
 	private Timer measureXd = new Timer();		
-	private AtomicLong propArrivalRate = new AtomicLong(0);// Next arrival proposal time
+	private AtomicDouble propArrivalRate = new AtomicDouble(0.0);// Next arrival proposal time
 
 
 
@@ -240,9 +242,9 @@ public class ZabCoinTossing extends Protocol {
 			case ZabCoinTossingHeader.COUNTMESSAGE:
 				addCountReadToTotal(hdr);
 				break;
-//			case ZabCoinTossingHeader.COUNTACK:
-//				addCountAckToTotal(hdr);
-//				break;     	
+				//			case ZabCoinTossingHeader.COUNTACK:
+				//				addCountAckToTotal(hdr);
+				//				break;     	
 			} 
 			return null;
 
@@ -346,10 +348,10 @@ public class ZabCoinTossing extends Protocol {
 		Proposal p;
 		MessageOrderInfo msgInfo = hrdAck.getMessageOrderInfo();
 		long zxidACK = msgInfo.getOrdering();
-//		if(stats.getnumReqDelivered()>=thshot){
-//			ackedNextProposal=true;
-//			log.info("Reach 9999999999999---?"+zxidACK);
-//		}
+		//		if(stats.getnumReqDelivered()>=thshot){
+		//			ackedNextProposal=true;
+		//			log.info("Reach 9999999999999---?"+zxidACK);
+		//		}
 		latestZxidSeen=zxidACK;
 		p = new Proposal();
 		p.AckCount++; // Ack from leader
@@ -358,9 +360,9 @@ public class ZabCoinTossing extends Protocol {
 		queuedProposalMessage.put(zxidACK, hrdAck);
 
 		//if(followerACKs.containsKey(zxidACK)){
-			//log.info("Received Ack, So will not send ACK for ----> "+zxidACK);
-			//ackToProcess.add(zxidACK);
-			//return;
+		//log.info("Received Ack, So will not send ACK for ----> "+zxidACK);
+		//ackToProcess.add(zxidACK);
+		//return;
 		//}
 		if (zUnit.SendAckOrNoSend()){// || ackedNextProposal) {
 			ZabCoinTossingHeader hdrACK = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACK, zxidACK);
@@ -400,7 +402,7 @@ public class ZabCoinTossing extends Protocol {
 		}
 		p.AckCount++;
 		//if (followerACKs.containsKey(ackedzxid)){
-			//followerACKs.remove(ackedzxid);
+		//followerACKs.remove(ackedzxid);
 		//}
 		if (isQuorum(p.getAckCount())) {
 			if (ackedzxid == lastZxidCommitted+1){
@@ -520,19 +522,19 @@ public class ZabCoinTossing extends Protocol {
 		}
 	}
 
-//	private void sendCountAckSent(){
-//		ZabCoinTossingHeader ackCount = new ZabCoinTossingHeader(ZabCoinTossingHeader.COUNTACK, stats.countAck.get());
-//		Message countAck = new Message(leader).putHeader(this.id,
-//				ackCount);
-//		countAck.setFlag(Flag.DONT_BUNDLE);
-//		Message cpy = countAck.copy();
-//		down_prot.down(new Event(Event.MSG, cpy));
-//	}
-//
-//	private synchronized void addCountAckToTotal(ZabCoinTossingHeader countAckHeader) {
-//		long ackCount = countAckHeader.getZxid();
-//		stats.countAck.addAndGet((int) ackCount);
-//	}
+	//	private void sendCountAckSent(){
+	//		ZabCoinTossingHeader ackCount = new ZabCoinTossingHeader(ZabCoinTossingHeader.COUNTACK, stats.countAck.get());
+	//		Message countAck = new Message(leader).putHeader(this.id,
+	//				ackCount);
+	//		countAck.setFlag(Flag.DONT_BUNDLE);
+	//		Message cpy = countAck.copy();
+	//		down_prot.down(new Event(Event.MSG, cpy));
+	//	}
+	//
+	//	private synchronized void addCountAckToTotal(ZabCoinTossingHeader countAckHeader) {
+	//		long ackCount = countAckHeader.getZxid();
+	//		stats.countAck.addAndGet((int) ackCount);
+	//	}
 
 	private synchronized void addCountReadToTotal(ZabCoinTossingHeader countReadHeader) {
 		long readCount = countReadHeader.getZxid();
@@ -874,15 +876,17 @@ public class ZabCoinTossing extends Protocol {
 		@Override
 		public void run() {
 			lastNumProposal = (stats.numProposal.get()-stats.lastNumProposal.get());
-			log.info("Number of Proposal arrival="+lastNumProposal);
-			propArrivalRate.set((long) (1/lastNumProposal));
-			log.info("Proposal arrival rate="+propArrivalRate.get()+" /d="+d);
-			log.info("p-->W=:"+pW);
+			if (lastNumProposal!=0){
+				log.info("Number of Proposal arrival="+lastNumProposal);
+				propArrivalRate.set( ((double) 1/lastNumProposal));
+				log.info("Proposal arrival rate="+propArrivalRate.get()+" /d="+d);
+				log.info("p-->W=:"+pW);
 
 
-			stats.lastNumProposal.set(stats.numProposal.get());
+				stats.lastNumProposal.set(stats.numProposal.get());
+			}
 		}
 
 	}
-	
+
 }
