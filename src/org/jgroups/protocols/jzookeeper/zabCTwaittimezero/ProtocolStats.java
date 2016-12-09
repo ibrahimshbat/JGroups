@@ -6,14 +6,18 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -116,7 +120,7 @@ public class ProtocolStats {
 		this.outDir = outDir;
 		this.info = info;
 		System.out.println("Info="+info);
-		
+
 
 
 		System.out.println("Dir="+outDir);
@@ -369,6 +373,285 @@ public class ProtocolStats {
 		this.is_warmup = is_warmup;
 	}
 
+	public Map<Double,Double> findpW(int N, int currentServers){
+		Map<Double, Double> pW = new HashMap<Double, Double>();
+		SortedSet<Double> ps = new TreeSet<Double>();
+		int c=N-currentServers;
+		N=N-c;
+		int n = N-1;
+		List<RangeHead> rangeHeads = findRageHead(N, c, n);
+		ps= findpForRangeHead(rangeHeads, c, n);
+		pW = findWForRangep(ps, N, c);
+		return pW;
+
+	}
+
+	public List<RangeHead> findRageHead(int N, int c, int n){
+		List<RangeHead> rHeads = new ArrayList<RangeHead>();
+		RangeHead rh;
+		for (int i = 1; i < n; i++) {
+			for (int j = i; j <n; j++) {
+				rh = new RangeHead(i,j);
+				rHeads.add(rh);
+			}
+		}
+		return rHeads;
+	}
+
+	public static SortedSet<Double> findpForRangeHead(List<RangeHead> rangeHeads, int c, int n){
+		DecimalFormat roundValue = new DecimalFormat("#.000");
+		double term1=1,p=0;
+		SortedSet<Double> ps = new TreeSet<Double>();
+		for (RangeHead rangeHead : rangeHeads) {
+			term1=1;
+			for (int j = 0; j <= rangeHead.getB(); j++) {
+				term1*= ((double)((n-rangeHead.getAlpha())-j)) / ((double)(rangeHead.getAlpha()+j));				
+			}
+			term1=1+Math.pow(term1, ((double)1/((double) rangeHead.getB()+1)));
+			p = ((double)1) / ((double) term1);
+			p= Double.parseDouble(roundValue.format(p));
+			ps.add(p);
+
+		}
+		return ps;
+	}
+
+	public TreeMap<Double, Double> findWForRangep(SortedSet<Double> ps, int N, int c){
+		DecimalFormat roundValue = new DecimalFormat("#.000");
+		TreeMap<Double, Double> pW = new TreeMap<Double, Double>();
+		double q00,q01,q02,q03,q11,q12,q13,q22,q23,q33, p=0.0, W=0.0;
+		Iterator<Double> it = ps.iterator();
+		switch(N){
+		case 5:
+		{
+			switch(c){
+			case 0:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 4);
+					q01=(4*p)* (Math.pow((1-p), 3));
+					q11=Math.pow((1-p), 3);
+					W = 1 + (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 1:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 3);
+					q01=(3*p)* (Math.pow((1-p), 2));
+					q11=Math.pow((1-p), 2);
+					W = 1+ (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 2:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 2);
+					q01=(2*p)* (1-p);
+					q11=1-p;
+					W = 1+ (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+
+			}
+		}
+		break;
+		case 7:
+		{
+			switch(c){
+			case 0:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 6);
+					q01=(6*p)* (Math.pow((1-p), 5));
+					q02=(15* (Math.pow(p, 2))) * (Math.pow((1-p), 4));
+					q11=Math.pow((1-p), 5);
+					q12=(5*p) * (Math.pow((1-p), 4));
+					q22=Math.pow((1-p), 4);
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11)))
+							+ (((double) q01*q12)/((double) (1-q00) * (1-q11) * (1-q22)))
+							+ (((double) q02)/(double) (1-q00) * (1-q22)) ;
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 1:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 5);
+					q01=(5*p) * (Math.pow((1-p), 4));
+					q02=(10* (Math.pow(p, 2))) * (Math.pow((1-p), 3));
+					q11=Math.pow((1-p), 4);
+					q12=(4*p) * (Math.pow((1-p), 3));
+					q22=Math.pow((1-p), 3);
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11))) 
+							+ (((double) q01*q12)/((double) (1-q00) * (1-q11) * (1-q22))) 
+							+ (((double) q02)/((double) (1-q00) * (1-q22))) ;
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 2:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 4);
+					q01=(4*p) * (Math.pow((1-p), 3));
+					q02=(6* (Math.pow(p, 2))) * (Math.pow((1-p), 2));
+					q11=Math.pow((1-p), 3);
+					q12=(3*p) * (Math.pow((1-p), 2));
+					q22=Math.pow((1-p), 2);
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11))) 
+							+ (((double) q01*q12)/((double) (1-q00) * (1-q11) * (1-q22))) 
+							+ (((double) q02)/((double) (1-q00) * (1-q22))) ;
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 3:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 3);
+					q01=(3*p) * (Math.pow((1-p), 2));
+					q02=(3* (Math.pow(p, 2))) * (1-p);
+					q11=Math.pow((1-p), 2);
+					q12=(2*p) * (1-p);
+					q22=(1-p);
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+							+ (((double) q01*q12)/(double) (1-q00) * (1-q11) * (1-q22)) 
+							+ (((double) q02)/(double) (1-q00) * (1-q22)) ;
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			}
+		}
+		break;
+		case 9:
+		{
+			switch(c){
+			case 0:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 8);
+					q01=(8*p) * (Math.pow((1-p), 7));
+					q02=(28* (Math.pow(p, 2))) * (Math.pow((1-p), 6));
+					q03=(56* (Math.pow(p, 3))) * (Math.pow((1-p), 5));
+					q11=Math.pow((1-p), 7);
+					q12=(7*p) * (Math.pow((1-p), 6));
+					q13=(21* (Math.pow(p, 2))) * (Math.pow((1-p), 5));
+					q22=Math.pow((1-p), 6);
+					q23=(6*p) * (Math.pow((1-p), 5));
+					q33=Math.pow((1-p), 5);
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
+							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
+							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+							+ (((double) q03)/((double) ((1-q00) * (1-q33))));
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 1:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 7);
+					q01=(7*p) * (Math.pow((1-p), 6));
+					q02=(21* (Math.pow(p, 2))) * (Math.pow((1-p), 5));
+					q03=(35* (Math.pow(p, 3))) * (Math.pow((1-p), 4));
+					q11=Math.pow((1-p), 6);
+					q12=(6*p) * (Math.pow((1-p), 5));
+					q13=(15* (Math.pow(p, 2))) * (Math.pow((1-p), 4));
+					q22=Math.pow((1-p), 5);
+					q23=(5*p) * (Math.pow((1-p), 4));
+					q33=Math.pow((1-p), 4);
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
+							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
+							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+							+ (((double) q03)/((double) ((1-q00) * (1-q33))));
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 2:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 6);
+					q01=(6*p) * (Math.pow((1-p), 5));
+					q02=(15* (Math.pow(p, 2))) * (Math.pow((1-p), 4));
+					q03=(4* (Math.pow(p, 3))) * (Math.pow((1-p), 3));
+					q11=Math.pow((1-p), 5);
+					q12=(5*p) * (Math.pow((1-p), 4));
+					q13=(10* (Math.pow(p, 2))) * (Math.pow((1-p), 3));
+					q22=Math.pow((1-p), 4);
+					q23=(4*p) * (Math.pow((1-p), 3));
+					q33=Math.pow((1-p), 3);
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
+							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
+							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+							+ (((double) q03)/((double) ((1-q00) * (1-q33))));
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 3:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 5);
+					q01=(5*p) * (Math.pow((1-p), 4));
+					q02=(10* (Math.pow(p, 2))) * (Math.pow((1-p), 3));
+					q03=(10* (Math.pow(p, 3))) * (Math.pow((1-p), 2));
+					q11=Math.pow((1-p), 4);
+					q12=(4*p) * (Math.pow((1-p), 3));
+					q13=(6* (Math.pow(p, 2))) * (Math.pow((1-p), 2));
+					q22=Math.pow((1-p), 3);
+					q23=(3*p) * (Math.pow((1-p), 2));
+					q33=Math.pow((1-p), 2);
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
+							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
+							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+							+ (((double) q03)/((double) ((1-q00) * (1-q33))));
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			case 4:
+				while (it.hasNext()) {
+					p=it.next();
+					q00=Math.pow((1-p), 4);
+					q01=(4*p) * (Math.pow((1-p), 3));
+					q02=(6* (Math.pow(p, 2))) * (Math.pow((1-p), 2));
+					q03=(4* (Math.pow(p, 3))) * (1-p);
+					q11=Math.pow((1-p), 3);
+					q12=(3*p) * (Math.pow((1-p), 2));
+					q13=(3* (Math.pow(p, 2))) * (1-p);
+					q22=Math.pow((1-p), 2);
+					q23=(2*p) * (1-p);
+					q33=1-p;
+					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
+							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
+							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+							+ (((double) q03)/((double) ((1-q00) * (1-q33))));
+					W= Double.parseDouble(roundValue.format(W));
+					pW.put(p, W);
+				}
+				break;
+			}
+		}
+		break;
+		}
+		return pW;
+	}
+
 	public void printProtocolStats(int deliveredRequest, int cliuterSize, int perRW, long waitSentTime) {
 		//System.out.println("info: " + deliveredRequest+" cliuterSize="+cliuterSize+" perRW"+perRW+" waitSentTime="+waitSentTime);
 		double avgAllD = 0, avgRead=0, allRWAvg=0, throughputRate =0, tempSumThr=0, per50th=0, per90th=0, 
@@ -383,7 +666,7 @@ public class ProtocolStats {
 						.toSeconds((endThroughputTime - startThroughputTime))))+" Req/sec");
 
 		//for (double th:throughputs){
-			//tempSumThr+=th;
+		//tempSumThr+=th;
 		//}
 		//throughputRate = tempSumThr/throughputs.size();
 		//outFile.println("Throughput Size: " + throughputs.size());

@@ -66,7 +66,7 @@ public class ZabCoinTossing extends Protocol {
 	private final Map<MessageId, Message> messageStore = Collections.synchronizedMap(new HashMap<MessageId, Message>());
 	//private ConcurrentMap<Long, Integer> followerACKs = new ConcurrentHashMap<Long, Integer>();
 
-
+	private Map<Double, Double> pW = new HashMap<Double, Double>();
 	protected volatile boolean                  running=true;
 	private final static String outDir = "/work/ZabCoinTossing/";
 	private static double percentRW = 0;
@@ -74,7 +74,8 @@ public class ZabCoinTossing extends Protocol {
 	private ProtocolStats stats = new ProtocolStats();
 	private int numABRecieved = 0;
 	@Property(name = "ZabCoinTossing_size", description = "It is ZabCoinTossing cluster size")
-	private int clusterSize = 9;
+	private final int N = 5;
+	private final double d = 27.575;
 	@Property(name = "tail_timeout", description = "pending Proposal timeout in Millisecond, before deliver")
 	private AtomicInteger tailTimeout = new AtomicInteger(2000);
 	private Timer timerForTail = new Timer();	
@@ -133,7 +134,8 @@ public class ZabCoinTossing extends Protocol {
 		latestZxidSeen = 0;
 		//ackedNextProposal=false;
 
-		zUnit.setP(1.0);
+		//zUnit.setP(1.0);
+		this.pW=this.stats.findpW(N, zabMembers.size());
 		if(!is_leader){
 			timerForTail.schedule(new TailTimeOutTask(), 5, 2000);//For tail proposal timeout
 			log.info("Starting Task");
@@ -254,7 +256,7 @@ public class ZabCoinTossing extends Protocol {
 	private void handleViewChange(View v) {
 		this.view = v;
 		List<Address> mbrs=v.getMembers();
-		if (mbrs.size() == (clusterSize+2)) {
+		if (mbrs.size() == (N+2)) {
 			for (int i=2;i<mbrs.size();i++){
 				zabMembers.add(mbrs.get(i));
 			}
@@ -277,10 +279,10 @@ public class ZabCoinTossing extends Protocol {
 			//}
 		}
 
-		if (mbrs.size() > (clusterSize+2) && zabMembers.isEmpty()) {
+		if (mbrs.size() > (N+2) && zabMembers.isEmpty()) {
 			for (int i = 2; i < mbrs.size(); i++) {
 				zabMembers.add(mbrs.get(i));
-				if ((zabMembers.size()>=clusterSize))
+				if ((zabMembers.size()>=N))
 					break;
 			}
 			leader = zabMembers.get(0);
@@ -493,7 +495,7 @@ public class ZabCoinTossing extends Protocol {
 	}
 
 	private boolean isQuorum(int majority){
-		return majority >= ((clusterSize/2) + 1)? true : false;
+		return majority >= ((N/2) + 1)? true : false;
 	}
 
 	private void sendCountRead(){
@@ -531,7 +533,7 @@ public class ZabCoinTossing extends Protocol {
 		stats.addToNumReqDelivered((int) readCount);
 		numReadCoundRecieved++;
 		if(numReadCoundRecieved==(zabMembers.size()-1)){
-			stats.printProtocolStats(queuedCommitMessage.size(), clusterSize, (int) (percentRW*100), waitSentTime);	
+			stats.printProtocolStats(queuedCommitMessage.size(), N, (int) (percentRW*100), waitSentTime);	
 
 		}
 

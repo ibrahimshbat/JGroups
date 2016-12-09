@@ -188,7 +188,6 @@ public class ZabCoinTossingHeader extends Header {
 		Util.writeStreamable(messageOrderInfo, out);
         writeBundledMsgInfo(bundledMsgInfo, out);
 		Util.writeStreamable(timeout, out);
-
 	}
 
 	@Override
