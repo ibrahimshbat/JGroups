@@ -1,4 +1,5 @@
 package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,10 +9,12 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -68,7 +71,7 @@ public class ZabCoinTossing extends Protocol {
 	private final Map<MessageId, Message> messageStore = Collections.synchronizedMap(new HashMap<MessageId, Message>());
 	//private ConcurrentMap<Long, Integer> followerACKs = new ConcurrentHashMap<Long, Integer>();
 
-	private Map<Double, Double> pW = new HashMap<Double, Double>();
+	private TreeMap<Double, Double> pW = new TreeMap<Double, Double>();
 	protected volatile boolean                  running=true;
 	private final static String outDir = "/work/ZabCoinTossing/";
 	private static double percentRW = 0;
@@ -77,7 +80,10 @@ public class ZabCoinTossing extends Protocol {
 	private int numABRecieved = 0;
 	@Property(name = "ZabCoinTossing_size", description = "It is ZabCoinTossing cluster size")
 	private final int N = 5;
-	private final double d = 27.575;
+	private final double d = (double) 27.575/1000;
+	private final int theta = 2251;
+	private int n=N-1;
+	private double thDivByn= (double) theta/n;
 	@Property(name = "tail_timeout", description = "pending Proposal timeout in Millisecond, before deliver")
 	private AtomicInteger tailTimeout = new AtomicInteger(2000);
 	private Timer timerForTail = new Timer();	
@@ -163,6 +169,14 @@ public class ZabCoinTossing extends Protocol {
 		executor3ProcessAck.shutdown();
 		//delayTimeout.shutdown();
 		super.stop();
+	}
+
+	public int getn() {
+		return n;
+	}
+
+	public void setn(int n){
+		this.n=n;
 	}
 
 	public Object down(Event evt) {
@@ -383,7 +397,7 @@ public class ZabCoinTossing extends Protocol {
 			}    
 		}
 		else {
-			log.info("get Tail--->"+zxidACK);
+			//log.info("get Tail--->"+zxidACK);
 			synchronized(tailProposal){
 				tailProposal.put(zxidACK, (System.currentTimeMillis()+tailTimeout.get()));
 			}
@@ -867,8 +881,11 @@ public class ZabCoinTossing extends Protocol {
 
 	class MeasuePropArrivalRate extends TimerTask {
 		private int lastNumProposal=0;
-		long sum=0;
-		long avgd=0;
+		double c2p2=0; //store result of (((double) theta/n) * ((double) 1/numProposalPerec));
+		double p=0.0;
+		double dMuliPropArr=0.0;
+		SortedSet<Double> ps = new TreeSet<Double>();
+		DecimalFormat roundValue = new DecimalFormat("#.000");
 		public MeasuePropArrivalRate() {
 
 		}
@@ -876,15 +893,58 @@ public class ZabCoinTossing extends Protocol {
 		@Override
 		public void run() {
 			lastNumProposal = (stats.numProposal.get()-stats.lastNumProposal.get());
+			ArrayList<Double> removedpc2 = new ArrayList<Double>();
+			ArrayList<Double> removedpc1 = new ArrayList<Double>();
+			TreeMap<Double, Double> copypW = new TreeMap<Double, Double>(pW);
+
 			if (lastNumProposal!=0){
-				log.info("Number of Proposal arrival="+lastNumProposal);
+				//log.info("Number of Proposal arrival="+lastNumProposal);
 				propArrivalRate.set( ((double) 1/lastNumProposal));
-				log.info("Proposal arrival rate="+propArrivalRate.get()+" /d="+d);
-				log.info("p-->W=:"+pW);
+				//log.info("Proposal arrival rate="+propArrivalRate.get()+" /d="+d);
+				//log.info("p-->W=:"+pW);
+				log.info("lastNumProposal="+lastNumProposal);
+				c2p2 = findCondtion2Part2(lastNumProposal);
+				c2p2= Double.parseDouble(roundValue.format(c2p2));
+				log.info("copypW="+copypW);
+				log.info("c2p2="+c2p2);
+				for (double p: copypW.keySet()){
+					if (p>=c2p2){
+						removedpc2.add(p);
+					}
+				}
+				if(!removedpc2.isEmpty()){
+					for (double p:removedpc2){
+						copypW.remove(p);							
+					}
+				}
+				if(!copypW.isEmpty()){
+					log.info("****ZabCT will be run****");
+					dMuliPropArr = d*lastNumProposal;
+					log.info("dMuliPropArr="+dMuliPropArr);
+					for (double p: copypW.keySet()){
+						if (copypW.get(p)>=dMuliPropArr){
+							removedpc1.add(p);
+						}
+					}
+					if(!removedpc1.isEmpty()){
+						for (double p:removedpc1){
+							copypW.remove(p);							
+						}
+					}
+					final Entry<Double, Double> largeKey = copypW.lastEntry();
+					log.info("p-->W=:"+copypW);
+					log.info("New p id ------------->=:"+largeKey.getKey());
+					zUnit.setP(largeKey.getKey());
+					log.info("p change to ---->"+zUnit.getP());
 
-
+				}
 				stats.lastNumProposal.set(stats.numProposal.get());
 			}
+		}
+		public double findCondtion2Part2(int numProposalPerec){
+			double c2p2=0.0;
+			c2p2 = (((double) theta/n) * ((double) 1/numProposalPerec));
+			return c2p2;
 		}
 
 	}

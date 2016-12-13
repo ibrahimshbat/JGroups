@@ -376,8 +376,8 @@ public class ProtocolStats {
 		this.is_warmup = is_warmup;
 	}
 
-	public Map<Double,Double> findpW(int N, int currentServers){
-		Map<Double, Double> pW = new HashMap<Double, Double>();
+	public TreeMap<Double,Double> findpW(int N, int currentServers){
+		TreeMap<Double, Double> pW = new TreeMap<Double, Double>();
 		SortedSet<Double> ps = new TreeSet<Double>();
 		int c=N-currentServers;
 		N=N-c;
@@ -414,7 +414,15 @@ public class ProtocolStats {
 			p = ((double)1) / ((double) term1);
 			p= Double.parseDouble(roundValue.format(p));
 			ps.add(p);
-
+		}
+		//Get more p values
+		double newp=0.0;
+		ArrayList<Double> copyps = new ArrayList<Double>(ps);
+		double fristp=((double)copyps.get(0))/2;
+		ps.add(fristp);
+		for(int i=0;i<copyps.size()-1;i++){
+			newp=((double) copyps.get(i)+copyps.get(i+1))/2;
+			ps.add(newp);
 		}
 		return ps;
 	}
@@ -434,7 +442,7 @@ public class ProtocolStats {
 					q00=Math.pow((1-p), 4);
 					q01=(4*p)* (Math.pow((1-p), 3));
 					q11=Math.pow((1-p), 3);
-					W = 1 + (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
+					W = (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
 					W= Double.parseDouble(roundValue.format(W));
 					pW.put(p, W);
 				}
@@ -445,7 +453,7 @@ public class ProtocolStats {
 					q00=Math.pow((1-p), 3);
 					q01=(3*p)* (Math.pow((1-p), 2));
 					q11=Math.pow((1-p), 2);
-					W = 1+ (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
+					W = (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
 					W= Double.parseDouble(roundValue.format(W));
 					pW.put(p, W);
 				}
@@ -456,7 +464,7 @@ public class ProtocolStats {
 					q00=Math.pow((1-p), 2);
 					q01=(2*p)* (1-p);
 					q11=1-p;
-					W = 1+ (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
+					W = (((double) q00)/(double) (1-q00))+  (((double) q01)/((double) (1-q00) * (1-q11)));
 					W= Double.parseDouble(roundValue.format(W));
 					pW.put(p, W);
 				}
@@ -477,7 +485,7 @@ public class ProtocolStats {
 					q11=Math.pow((1-p), 5);
 					q12=(5*p) * (Math.pow((1-p), 4));
 					q22=Math.pow((1-p), 4);
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11)))
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11)))
 							+ (((double) q01*q12)/((double) (1-q00) * (1-q11) * (1-q22)))
 							+ (((double) q02)/(double) (1-q00) * (1-q22)) ;
 					W= Double.parseDouble(roundValue.format(W));
@@ -493,7 +501,7 @@ public class ProtocolStats {
 					q11=Math.pow((1-p), 4);
 					q12=(4*p) * (Math.pow((1-p), 3));
 					q22=Math.pow((1-p), 3);
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11))) 
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11))) 
 							+ (((double) q01*q12)/((double) (1-q00) * (1-q11) * (1-q22))) 
 							+ (((double) q02)/((double) (1-q00) * (1-q22))) ;
 					W= Double.parseDouble(roundValue.format(W));
@@ -509,7 +517,7 @@ public class ProtocolStats {
 					q11=Math.pow((1-p), 3);
 					q12=(3*p) * (Math.pow((1-p), 2));
 					q22=Math.pow((1-p), 2);
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11))) 
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11))) 
 							+ (((double) q01*q12)/((double) (1-q00) * (1-q11) * (1-q22))) 
 							+ (((double) q02)/((double) (1-q00) * (1-q22))) ;
 					W= Double.parseDouble(roundValue.format(W));
@@ -525,7 +533,7 @@ public class ProtocolStats {
 					q11=Math.pow((1-p), 2);
 					q12=(2*p) * (1-p);
 					q22=(1-p);
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
 							+ (((double) q01*q12)/(double) (1-q00) * (1-q11) * (1-q22)) 
 							+ (((double) q02)/(double) (1-q00) * (1-q22)) ;
 					W= Double.parseDouble(roundValue.format(W));
@@ -551,7 +559,7 @@ public class ProtocolStats {
 					q22=Math.pow((1-p), 6);
 					q23=(6*p) * (Math.pow((1-p), 5));
 					q33=Math.pow((1-p), 5);
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
 							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
 							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
@@ -573,7 +581,7 @@ public class ProtocolStats {
 					q22=Math.pow((1-p), 5);
 					q23=(5*p) * (Math.pow((1-p), 4));
 					q33=Math.pow((1-p), 4);
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
 							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
 							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
@@ -595,7 +603,7 @@ public class ProtocolStats {
 					q22=Math.pow((1-p), 4);
 					q23=(4*p) * (Math.pow((1-p), 3));
 					q33=Math.pow((1-p), 3);
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
 							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
 							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
@@ -617,7 +625,7 @@ public class ProtocolStats {
 					q22=Math.pow((1-p), 3);
 					q23=(3*p) * (Math.pow((1-p), 2));
 					q33=Math.pow((1-p), 2);
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
 							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
 							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
@@ -639,7 +647,7 @@ public class ProtocolStats {
 					q22=Math.pow((1-p), 2);
 					q23=(2*p) * (1-p);
 					q33=1-p;
-					W = 1+ (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+					W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
 							+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 							+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
 							+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
