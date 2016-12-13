@@ -196,8 +196,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		}
 
 	}
-
-
+	
 	void stop() {
 		if(disp != null)
 			disp.stop();
@@ -276,7 +275,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		Invoker[] invokers=new Invoker[num_threads];
 		// create sender (threads) to send writes to /_1/_2
 		for(int i=0; i < invokers.length; i++){
-			invokers[i]=new Invoker(nonBoxMembers,  (numsOfWarmUp/numOfClients), num_msgs_sent, random, 0.0, true);
+			invokers[i]=new Invoker(nonBoxMembers,  (numsOfWarmUp/numOfClients), num_msgs_sent, random, 0.0, true, waitSS);
 			System.out.println("Create Invoker --------------->>>> " + i);
 
 		}
@@ -312,7 +311,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		Invoker[] invokers=new Invoker[num_threads];
 		// create sender (threads) to send writes to /_1/_2
 		for(int i=0; i < invokers.length; i++){
-			invokers[i]=new Invoker(nonBoxMembers, (num_msgs/numOfClients), num_msgs_sent, random, read_percentage, false);
+			invokers[i]=new Invoker(nonBoxMembers, (num_msgs/numOfClients), num_msgs_sent, random, read_percentage, false, waitSS);
 			System.out.println("Create Invoker --------------->>>> " + i);
 		}
 
@@ -597,10 +596,12 @@ public class ZabInfinispan extends ReceiverAdapter {
 		private Random random;
 		private double read_per=0;
 		private boolean warmStage = false;
-
-
+		private int threshold = 10000;
+		private int lastMsgSent = 0;
+		private int minl = 0, maxl = 0;
+		private long waitSSl=0;
 		public Invoker(Collection<Address> dests, int num_msgs_to_send, 
-				AtomicInteger num_msgs_sent, Random random, double read_per, boolean isWarm) {
+				AtomicInteger num_msgs_sent, Random random, double read_per, boolean isWarm, long waitSSl) {
 			this.num_msgs_sent=num_msgs_sent;
 			this.dests.addAll(dests);
 			this.num_msgs_to_send=num_msgs_to_send;
@@ -608,6 +609,9 @@ public class ZabInfinispan extends ReceiverAdapter {
 			this.random = random;
 			this.read_per = read_per;
 			this.warmStage = isWarm;
+			this.waitSSl=waitSSl;
+			this.minl = (int) waitSSl - ((int) (waitSSl * 0.25));
+			this.maxl = (int) waitSSl + ((int) (waitSSl * 0.25));
 			setName("Invoker-" + COUNTER.getAndIncrement());
 		}
 
@@ -651,11 +655,16 @@ public class ZabInfinispan extends ReceiverAdapter {
 					break;
 				}
 				if (!warmUp){
-					long st=System.currentTimeMillis();
+					if(i>= threshold){
+						threshold+=10000;
+						waitSSl+=50;
+						changeWaitTime(waitSSl); 
+						System.out.println("Wait Time has changed to  " + (waitSSl) + " /threshold=" +threshold+" /i="+i);
+					}
 					try {
-						sendTime = min + rand.nextInt((max - min) + 1);
+						sendTime = minl + rand.nextInt((maxl - minl) + 1);
 						Thread.sleep(sendTime);
-						System.out.println("WaitTime--->"+sendTime);
+						//System.out.println("WaitTime--->"+sendTime);
 					} catch (InterruptedException e) {
 						//TODO Auto-generated catch block
 						e.printStackTrace();
@@ -696,6 +705,15 @@ public class ZabInfinispan extends ReceiverAdapter {
 				}
 			}
 		}
+		
+		public void changeWaitTime(long newWaitTime){
+			System.out.println("^^^^^^^Call changeWaitTime waitSS="+this.waitSSl);
+			this.waitSSl = newWaitTime;
+			System.out.println("^^^^^^^Call changeWaitTime waitSS="+this.waitSSl);
+			this.minl = (int) this.waitSSl - ((int) (this.waitSSl * 0.25));
+			this.maxl = (int) this.waitSSl + ((int) (this.waitSSl * 0.25));
+		}
+
 
 		private Address pickTarget() {
 			int index=dests.indexOf(local_addr);
@@ -1045,6 +1063,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			}
 			if("-waitSS".equals(args[i])) {
 				waitss =  (long) Integer.parseInt(args[++i]);
+				System.out.println("waitss=***"+waitss);
 				continue;
 			}
 

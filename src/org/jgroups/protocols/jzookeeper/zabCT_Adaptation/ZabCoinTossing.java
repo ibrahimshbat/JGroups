@@ -918,7 +918,6 @@ public class ZabCoinTossing extends Protocol {
 					}
 				}
 				if(!copypW.isEmpty()){
-					log.info("****ZabCT will be run****");
 					dMuliPropArr = d*lastNumProposal;
 					log.info("dMuliPropArr="+dMuliPropArr);
 					for (double p: copypW.keySet()){
@@ -937,6 +936,9 @@ public class ZabCoinTossing extends Protocol {
 					zUnit.setP(largeKey.getKey());
 					log.info("p change to ---->"+zUnit.getP());
 
+				}
+				else{
+					log.info("****Zab will be run****");
 				}
 				stats.lastNumProposal.set(stats.numProposal.get());
 			}
