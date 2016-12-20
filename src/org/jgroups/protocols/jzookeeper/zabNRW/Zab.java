@@ -190,7 +190,6 @@ public class Zab extends Protocol {
 						log.info("Store Zxid----> "+hdr.getZxid()+" Time="+System.currentTimeMillis());
 					}
 				}
-
 				delivery.add(hdr.getZxid());
 				break;
 			case ZabHeader.STARTWORKLOAD:

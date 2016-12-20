@@ -304,7 +304,7 @@ public class ZabCoinTossing extends Protocol {
 				sendACKToF=Executors.newSingleThreadExecutor();
 				sendACKToF.execute(new SendToFollower(this.id));
 				executorProcessAckForFollower=Executors.newSingleThreadExecutor();
-				executorProcessAckForFollower.execute(new ProcessorAckForLeader());
+				executorProcessAckForFollower.execute(new ProcessorAckForFollower());
 			}
 			for(Address add:zabMembers){
 				if(!is_leader && !add.equals(local_addr)){
@@ -848,7 +848,6 @@ public class ZabCoinTossing extends Protocol {
 			while (true) {
 				try {
 					hdr = ackToProcess.take();
-					hdr = queuedProposalMessage.get(ackedzxid);
 					if (hdr==null){
 						log.info("Header is null for -->"+ackedzxid);
 						continue;
@@ -874,7 +873,6 @@ public class ZabCoinTossing extends Protocol {
 			while (true) {
 				try {
 					hdr = ackToProcess.take();
-					hdr = queuedProposalMessage.get(ackedzxid);
 					if (hdr==null){
 						log.info("Header is null for -->"+ackedzxid);
 						continue;

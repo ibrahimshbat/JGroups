@@ -103,9 +103,9 @@ public class ZabCoinTossing extends Protocol {
 	private static int thshot = 9950;
 	private Timer measureXd = new Timer();		
 	private AtomicDouble propArrivalRate = new AtomicDouble(0.0);// Next arrival proposal time
-	private String RuningProtocol = "ZabCT";
-	private final String ZabCT = "ZabCT";
-	private final String Zab= "Zab";
+	private int runingProtocol = 2;
+	private final int ZabCT = 2;
+	private final int Zab= 1;
 
 
 
@@ -184,12 +184,12 @@ public class ZabCoinTossing extends Protocol {
 	}
 
 
-	public String getRuningProtocol() {
-		return RuningProtocol;
+	public int getRuningProtocol() {
+		return runingProtocol;
 	}
 
-	public void setRuningProtocol(String runingProtocol) {
-		RuningProtocol = runingProtocol;
+	public void setRuningProtocol(int runingProtocol) {
+		this.runingProtocol = runingProtocol;
 	}
 
 	public Object down(Event evt) {
@@ -231,6 +231,9 @@ public class ZabCoinTossing extends Protocol {
 				sendACK(msg, hdr);
 				break;          		
 			case ZabCoinTossingHeader.ACK:
+				ackToProcess.add(hdr.getZxid());
+				break;
+			case ZabCoinTossingHeader.ACKZAB:
 				ackToProcess.add(hdr.getZxid());
 				break;
 			case ZabCoinTossingHeader.STARTWORKLOAD:
@@ -391,29 +394,46 @@ public class ZabCoinTossing extends Protocol {
 		//ackToProcess.add(zxidACK);
 		//return;
 		//}
-		if (zUnit.SendAckOrNoSend()){// || ackedNextProposal) {
-			ZabCoinTossingHeader hdrACK = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACK, zxidACK);
-			Message ackMessage = new Message().putHeader(this.id, hdrACK);
-			//ackMessage.setFlag(Message.Flag.DONT_BUNDLE);
-			try{
-				for(Address addr:zabMembers){
-					if (local_addr.equals(addr))
-						continue;
-					Message cpy = ackMessage.copy();
-					cpy.setDest(addr);
-					down_prot.down(new Event(Event.MSG, cpy));  
-					//stats.countAck.incrementAndGet();
-				}	
-				ackToProcess.add(zxidACK);
-			}catch(Exception ex) {
-				log.error("failed proposing message to members");
-			}    
-		}
-		else {
-			//log.info("get Tail--->"+zxidACK);
-			synchronized(tailProposal){
-				tailProposal.put(zxidACK, (System.currentTimeMillis()+tailTimeout.get()));
+		switch(runingProtocol){
+		case Zab:
+			log.info("Descsion is--->"+"ZABBBBBB");
+			ZabCoinTossingHeader hdrACK = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACKZAB, zxidACK);
+			Message ACKMessage = new Message(leader).putHeader(this.id, hdrACK);
+			//.setFlag(Message.Flag.DONT_BUNDLE);
+			try {
+				down_prot.down(new Event(Event.MSG, ACKMessage));
+			} catch (Exception ex) {
+				log.error("failed sending ACK message to Leader");
 			}
+			//ackToProcess.add(zxidACK);
+			break;
+		case ZabCT:
+			log.info("Descsion is--->"+"ZABCTTTTTTTTTT");
+			if (zUnit.SendAckOrNoSend()){// || ackedNextProposal) {
+				ZabCoinTossingHeader hdrACKCT = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACKZAB, zxidACK);
+				Message ackMessage = new Message().putHeader(this.id, hdrACKCT);
+				//ackMessage.setFlag(Message.Flag.DONT_BUNDLE);
+				try{
+					for(Address addr:zabMembers){
+						if (local_addr.equals(addr))
+							continue;
+						Message cpy = ackMessage.copy();
+						cpy.setDest(addr);
+						down_prot.down(new Event(Event.MSG, cpy));  
+						//stats.countAck.incrementAndGet();
+					}	
+					ackToProcess.add(zxidACK);
+				}catch(Exception ex) {
+					log.error("failed proposing message to members");
+				}    
+			}
+			else {
+				//log.info("get Tail--->"+zxidACK);
+				synchronized(tailProposal){
+					tailProposal.put(zxidACK, (System.currentTimeMillis()+tailTimeout.get()));
+				}
+			}
+			break;
 		}
 	}
 
@@ -929,7 +949,7 @@ public class ZabCoinTossing extends Protocol {
 					}
 				}
 				if (!copypW.isEmpty()){
-					if (RuningProtocol.equals(ZabCT)){
+					if (runingProtocol==ZabCT){
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
 						log.info("p-->W=:"+copypW);
 						log.info("New p id ------------->=:"+largeKey.getKey());
@@ -948,13 +968,13 @@ public class ZabCoinTossing extends Protocol {
 				}
 				else{
 					log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-					setRuningProtocol(ZabCT);
+					setRuningProtocol(Zab);
 				}
 
 			}
 			else{
 				log.info("Must Change to Zab    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-				setRuningProtocol(ZabCT);
+				setRuningProtocol(Zab);
 			}
 			stats.lastNumProposal.set(stats.numProposal.get());
 		}

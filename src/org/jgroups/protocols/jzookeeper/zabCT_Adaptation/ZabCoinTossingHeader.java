@@ -31,7 +31,7 @@ public class ZabCoinTossingHeader extends Header {
 	public static final byte FINISHED = 17;
 	public static final byte STARTWORKLOAD = 18;
 	public static final byte COUNTACK = 19;
-
+	public static final byte ACKZAB = 20;
 
 	private byte        type=0;
 	private long        zxid=0;
@@ -141,6 +141,8 @@ public class ZabCoinTossingHeader extends Header {
 		case FINISHED:			 return "FINISHED";
 		case STARTWORKLOAD:			 return "STARTWORKLOAD";
 		case COUNTACK:			 return "COUNTACK";
+		case ACKZAB:			 return "ACKZAB";
+
 
 		default:             return "n/a";
 		}

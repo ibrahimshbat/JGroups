@@ -296,7 +296,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	}
 
 	public Results startTest() throws Throwable {
-		Thread.sleep((long)(rand.nextInt((int)waitCC) + 1));
+		//Thread.sleep((long)(rand.nextInt((int)waitCC) + 1));
 		addSiteMastersToMembers();
 		warmUp = false;
 		System.out.println("invoking " + num_msgs + " RPCs of " + Util.printBytes(msg_size) +
@@ -317,7 +317,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 
 		long start=System.currentTimeMillis();
 		for(Invoker invoker: invokers){
-			Thread.sleep((long)(rand.nextInt((int)waitII) + 1));
+			//Thread.sleep((long)(rand.nextInt((int)waitII) + 1));
 			invoker.start();
 		}
 		for(Invoker invoker: invokers) {
@@ -442,7 +442,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		System.out.println("after sending rpc for WarmUp");
 
 		sendStartNotify();
-		Thread.sleep(50);
+		Thread.sleep(100);
 
 		responses=disp.callRemoteMethods(dest, new MethodCall(START), options);
 		System.out.println("after sending rpc real test");
