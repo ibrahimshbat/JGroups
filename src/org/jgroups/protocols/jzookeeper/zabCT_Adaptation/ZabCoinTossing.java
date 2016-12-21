@@ -153,7 +153,7 @@ public class ZabCoinTossing extends Protocol {
 		this.pW=this.stats.findpW(N, zabMembers.size());
 		log.info("pW====="+this.pW);
 		if(!is_leader){
-			timerForTail.schedule(new TailTimeOutTask(), 5, 2000);//For tail proposal timeout
+			//timerForTail.schedule(new TailTimeOutTask(), 5, 2000);//For tail proposal timeout
 			measureXd.schedule(new MeasuePropArrivalRate(), 5, 1000);//For tail proposal timeout
 			log.info("Starting Task");
 			log.info("I am Follower");
@@ -408,7 +408,7 @@ public class ZabCoinTossing extends Protocol {
 			//ackToProcess.add(zxidACK);
 			break;
 		case ZabCT:
-			log.info("Descsion is--->"+"ZABCTTTTTTTTTT");
+			//log.info("Descsion is--->"+"ZABCTTTTTTTTTT");
 			if (zUnit.SendAckOrNoSend()){// || ackedNextProposal) {
 				ZabCoinTossingHeader hdrACKCT = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACKZAB, zxidACK);
 				Message ackMessage = new Message().putHeader(this.id, hdrACKCT);
@@ -931,12 +931,12 @@ public class ZabCoinTossing extends Protocol {
 
 			if (lastNumProposal!=0){
 				propArrivalRate.set( ((double) 1/lastNumProposal));
-				log.info("lastNumProposal="+lastNumProposal);
+				//log.info("lastNumProposal="+lastNumProposal);
 				c2p2 = findCondtion2Part2(lastNumProposal);
 				c2p2= Double.parseDouble(roundValue.format(c2p2));
 				dMuliPropArr = d*lastNumProposal;
-				log.info("c2p2="+c2p2);
-				log.info("dMuliPropArr="+dMuliPropArr);
+				//log.info("c2p2="+c2p2);
+				//log.info("dMuliPropArr="+dMuliPropArr);
 
 				for (double p: copypW.keySet()){
 					if (p>=c2p2 || copypW.get(p)>=dMuliPropArr){
@@ -951,19 +951,21 @@ public class ZabCoinTossing extends Protocol {
 				if (!copypW.isEmpty()){
 					if (runingProtocol==ZabCT){
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
-						log.info("p-->W=:"+copypW);
-						log.info("New p id ------------->=:"+largeKey.getKey());
+						//log.info("p-->W=:"+copypW);
+						//log.info("New p id ------------->=:"+largeKey.getKey());
 						zUnit.setP(largeKey.getKey());
-						log.info("p change to ---->"+zUnit.getP());
+						//log.info("p change to ---->"+zUnit.getP());
+						log.info("Arrival Rate=:"+lastNumProposal+"/ d*Lambda=:"+dMuliPropArr+
+                              " /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
 					}
 					else{
-						log.info("Must Change to ZabCT   ********************************");
+						//log.info("Must Change to ZabCT   ********************************");
 						setRuningProtocol(ZabCT);
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
-						log.info("p-->W=:"+copypW);
-						log.info("New p id ------------->=:"+largeKey.getKey());
+						//log.info("p-->W=:"+copypW);
+						//log.info("New p id ------------->=:"+largeKey.getKey());
 						zUnit.setP(largeKey.getKey());
-						log.info("p change to ---->"+zUnit.getP());
+						//log.info("p change to ---->"+zUnit.getP());
 					}
 				}
 				else{
@@ -972,10 +974,10 @@ public class ZabCoinTossing extends Protocol {
 				}
 
 			}
-			else{
-				log.info("Must Change to Zab    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-				setRuningProtocol(Zab);
-			}
+//			else{
+//				log.info("Must Change to Zab    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+//				setRuningProtocol(Zab);
+//			}
 			stats.lastNumProposal.set(stats.numProposal.get());
 		}
 		public double findCondtion2Part2(int numProposalPerec){
