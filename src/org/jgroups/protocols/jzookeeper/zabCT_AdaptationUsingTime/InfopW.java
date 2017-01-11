@@ -1,4 +1,4 @@
-package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
+package org.jgroups.protocols.jzookeeper.zabCT_AdaptationUsingTime;
 
 public class InfopW implements Comparable{
 	private double p=0.0;

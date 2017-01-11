@@ -1,4 +1,4 @@
-package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
+package org.jgroups.protocols.jzookeeper.zabCT_AdaptationUsingTime;
 
 import org.jgroups.Address;
 import org.jgroups.util.Bits;

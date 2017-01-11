@@ -1,4 +1,4 @@
-package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
+package org.jgroups.protocols.jzookeeper.zabCT_AdaptationUsingTime;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -969,6 +969,8 @@ public class ZabCoinTossing extends Protocol {
 					}
 				}
 				else{
+					stats.addInforForp("Arrival Rate=:"+lastNumProposal+"/ d*Lambda=:"+dMuliPropArr+
+                              " /(Theta/n * 1/Lambda)=:"+c2p2+" /pW=:"+pW+" /p*List=:"+copypW);
 					log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 					setRuningProtocol(Zab);
 				}

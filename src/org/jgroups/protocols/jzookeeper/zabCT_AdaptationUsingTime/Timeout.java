@@ -1,4 +1,4 @@
-package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
+package org.jgroups.protocols.jzookeeper.zabCT_AdaptationUsingTime;
 
 import java.io.DataInput;
 import java.io.DataOutput;

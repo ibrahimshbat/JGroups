@@ -1,4 +1,4 @@
-package org.jgroups.protocols.jzookeeper.zabCT_Adaptation;
+package org.jgroups.protocols.jzookeeper.zabCT_AdaptationUsingTime;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -43,6 +43,7 @@ public class ProtocolStats {
 	private Map<MessageId, Long> latencyProposalST;
 	private List<Double> throughputs;
 	private List<Long> recievedRequestTime;
+	private List<String> infoForp;
 	public boolean isLastRequestAcked = false;
 	public long startTailTime = 0;
 	private int throughput;
@@ -89,7 +90,7 @@ public class ProtocolStats {
 	public ProtocolStats(String protocolName, int numberOfClients,
 			int numberOfSenderInEachClient, String outDir,
 			boolean stopWarmup, String info) {
-
+		this.infoForp = new ArrayList<String>();
 		this.latencies = new ArrayList<Long>();
 		this.readLatencies = new ArrayList<Long>();
 		this.tailDelay = new ArrayList<Long>();
@@ -153,6 +154,10 @@ public class ProtocolStats {
 		}
 	}
 
+	public void addInforForp(String infop) {
+		this.infoForp.add(infop);
+	}
+	
 	public int getLastNumReqDeliveredBefore() {
 		return lastNumReqDeliveredBefore.get();
 	}
@@ -746,7 +751,7 @@ public class ProtocolStats {
 			//outFileToWork.println((double) (((double) lat)/1000000));
 			outFileAllLat.println((double) (((double) lat)/1000000));
 		}
-
+		outFile.println("INFO For p: "+infoForp);
 		outFile.println("Test Generated at "
 				+ new Date()
 				+ " /Lasted for = "
