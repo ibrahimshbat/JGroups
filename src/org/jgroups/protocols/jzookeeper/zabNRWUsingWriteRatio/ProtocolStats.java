@@ -63,12 +63,18 @@ public class ProtocolStats {
 
 	private static PrintWriter outFileToWork;
 	private static PrintWriter outFileAllLat;
+	private static PrintWriter writeLat;
+	private static PrintWriter readLat;
+	private static PrintWriter allLat;
+
 	private static PrintWriter outRRTime;
 	public AtomicInteger countTailTimeout;
 	public int maxTailTimeout = Integer.MIN_VALUE;
 	public String dirTestType=null;
 	public String info=null;
 	private List<Integer> latencyPerRatio;
+	private List<Integer> latencyPointByZxidPerRatio;
+
 
 
 
@@ -120,6 +126,7 @@ public class ProtocolStats {
 		this.info = info;
 		this.latencyPerRatio = new ArrayList<Integer>();
 		this.latencyPerRatio.add(0);// Frist location should be index 0
+		this.latencyPointByZxidPerRatio  = new ArrayList<Integer>();
 		System.out.println("Info="+info);
 
 		System.out.println("Dir="+outDir);
@@ -136,8 +143,14 @@ public class ProtocolStats {
 						+ protocolName + "tailTime.csv", true)));
 				this.outFileToWork = new PrintWriter(new BufferedWriter(
 						new FileWriter(outDir +InetAddress.getLocalHost().getHostName()+ protocolName + ".csv", true)));
-				//this.outFileAllLat = new PrintWriter(new BufferedWriter(
-				//new FileWriter(outDir+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "All.csv", true)));
+				//this.allLat = new PrintWriter(new BufferedWriter(
+				//new FileWriter(outDir+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "AllLat.csv", true)));
+				this.allLat = new PrintWriter(new BufferedWriter(
+						new FileWriter(outDir+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "AllLat.csv", true)));
+				this.writeLat = new PrintWriter(new BufferedWriter(
+						new FileWriter(outDir+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "WriteLat.csv", true)));
+				this.readLat = new PrintWriter(new BufferedWriter(
+						new FileWriter(outDir+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "ReadLat.csv", true)));
 				this.outRRTime = new PrintWriter(new BufferedWriter(
 						new FileWriter(outDir +InetAddress.getLocalHost().getHostName()+ "recievedRT.csv", true)));
 			} catch (UnknownHostException e) {
@@ -378,6 +391,16 @@ public class ProtocolStats {
 		latencyPerRatio.add(latencies.size()-1);
 	}
 
+	// This method uses for Zab to find latency for each W% case
+	public void addLatencyPointByZxidPerRatio(int point) {
+		latencyPointByZxidPerRatio.add(point);
+	}
+
+	// This method find last current latency index
+	public int getLatencyIndex() {
+		return latencies.size()-1;
+	}
+
 	public void printProtocolStats(int deliveredRequest, int cliuterSize, int perRW) {
 
 		double avgAllD = 0, avgRead=0, allRWAvg=0, throughputRate =0, tempSumThr=0, per50th=0, per90th=0, 
@@ -461,7 +484,7 @@ public class ProtocolStats {
 		for (int i=0;i<latencyPerRatio.size();i++){
 			if (i != (latencyPerRatio.size()-1)){
 				//outFile.print("[start="+latencyPerRatio.get(i)+"End="+latencyPerRatio.get(i+1)+"] ");
-				avLate = averageFromTo(latencyPerRatio.get(i), latencyPerRatio.get(i+1), latencies);
+				avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
 				avLate =avLate / 1000000.0;
 				outFile.print("["+incrementRatio+"%="+avLate+"] ");
 				incrementRatio+=10;
@@ -469,7 +492,7 @@ public class ProtocolStats {
 			}
 			else{
 				//outFile.print("Last[start="+latencyPerRatio.get(i)+"End="+(latencies.size()-1)+"] ");
-				avLate = averageFromTo(latencyPerRatio.get(i), latencies.size()-1, latencies);
+				avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.size()-1, latencies);
 				avLate =avLate / 1000000.0;
 				outFile.println("["+incrementRatio+"%="+avLate+"]");
 				//numOfProposalPerRatio.add(((latencies.size()-1)-latencyPerRatio.get(i)));
@@ -486,6 +509,29 @@ public class ProtocolStats {
 		//outFileAllLat.println((double) (((double) lat)/1000000));
 		//}
 
+		// Print all latencies type into files
+		incrementRatio=10;
+		int ind=0;
+		//latencyPointByZxidPerRatio.add((long) (latencies.size()-1));
+		System.out.println("Change Ratio to: "+incrementRatio+ " Frist zxid="+latencyPointByZxidPerRatio.get(ind));
+		for(int i=0; i<latencies.size();i++){
+			if(ind!=10 &&  i == latencyPointByZxidPerRatio.get(ind) ){
+				incrementRatio+=10;
+				++ind;
+				//System.out.println("Change Ratio to: "+incrementRatio+ " i="+i+" New zxid="+latencyPointByZxidPerRatio.get(ind));
+			}
+			writeLat.println( (((double) latencies.get(i))/1000000)+","+incrementRatio);
+		}
+		outFile.println("Zxid Index: "+latencyPointByZxidPerRatio);
+
+		for(long lat:readLatencies)
+			readLat.println((double) (((double) lat)/1000000));
+
+		for(long lat:RWLatencies)
+			allLat.println((double) (((double) lat)/1000000));
+
+
+
 		outFile.println("Test Generated at "
 				+ new Date()
 				+ " /Lasted for = "
@@ -497,6 +543,10 @@ public class ProtocolStats {
 		outFileToWork.close();
 		//outFileAllLat.close();
 		outRRTime.close();
+		writeLat.close();
+		allLat.close();
+		readLat.close();
+
 		System.out.println("Finished");
 	}
 

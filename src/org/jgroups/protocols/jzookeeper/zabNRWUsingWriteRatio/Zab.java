@@ -76,6 +76,7 @@ public class Zab extends Protocol {
 	//private Timer checkFinished = new Timer();	
 	private static int numReadCoundRecieved=0;
 	private double writeRatio= 0;
+	private int latencyIndex = 0;
 
 
 
@@ -213,6 +214,7 @@ public class Zab extends Protocol {
 				writeRatio = Double.parseDouble(info);
 				log.info("Notifcation, W% changed to "+writeRatio);
 				this.stats.addLatencyPointForRatio();
+				this.stats.addLatencyPointByZxidPerRatio(latencyIndex);
 				//stats.addNumProposalPerRatio((stats.numProposal.get()-stats.lastNumProposalRatio.get()));
 				//stats.lastNumProposalRatio.set(stats.numProposal.get());
 				//long now = System.currentTimeMillis();
@@ -229,6 +231,7 @@ public class Zab extends Protocol {
 				running = false;
 				timer.cancel();
 				sendCountRead();
+				this.stats.addLatencyPointByZxidPerRatio(latencyIndex);
 				log.info("Printing stats");
 				//}
 				break;
@@ -440,14 +443,15 @@ public class Zab extends Protocol {
 		stats.incnumReqDelivered();
 		stats.setEndThroughputTime(System.currentTimeMillis());
 		//log.info("Zxid=:"+dZxid+" Time="+System.currentTimeMillis());
-    //log.info("Zxid=:"+dZxid);
-    //log.info("Zxid=:"+dZxid);
+		//log.info("Zxid=:"+dZxid);
+		//log.info("Zxid=:"+dZxid);
 		if (requestQueue.contains(messageOrderInfo.getId())) {
 			long startTime = hdrOrginal.getMessageOrderInfo().getId().getStartTime();
 			long endTime = System.nanoTime();
 			stats.addLatency((endTime - startTime));
 			sendOrderResponse(messageOrderInfo);
 			requestQueue.remove((messageOrderInfo.getId()));
+			latencyIndex=stats.getLatencyIndex();
 		}
 		//synchronized (this) {
 		lastZxidCommitted = dZxid;
