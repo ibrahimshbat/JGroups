@@ -146,11 +146,11 @@ public class ProtocolStats {
 				//this.allLat = new PrintWriter(new BufferedWriter(
 				//new FileWriter(outDir+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "AllLat.csv", true)));
 				this.allLat = new PrintWriter(new BufferedWriter(
-						new FileWriter(outDir+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "AllLat.csv", true)));
+						new FileWriter(outDir+"/Adaptation/"+  InetAddress.getLocalHost().getHostName()+ protocolName +  "AllLat.csv", true)));
 				this.writeLat = new PrintWriter(new BufferedWriter(
-						new FileWriter(outDir+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "WriteLat.csv", true)));
+						new FileWriter(outDir+"/Adaptation/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "WriteLat.csv", true)));
 				this.readLat = new PrintWriter(new BufferedWriter(
-						new FileWriter(outDir+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "ReadLat.csv", true)));
+						new FileWriter(outDir+"/Adaptation/"+ InetAddress.getLocalHost().getHostName()+ protocolName +  "ReadLat.csv", true)));
 				this.outRRTime = new PrintWriter(new BufferedWriter(
 						new FileWriter(outDir +InetAddress.getLocalHost().getHostName()+ "recievedRT.csv", true)));
 			} catch (UnknownHostException e) {
@@ -477,29 +477,31 @@ public class ProtocolStats {
 		outFile.println("All Latencies 95th percentile: "+per95th);
 		outFile.println("All Latencies 99th percentile: "+per99th);
 
-		outFile.println("Latencies per W%: ");
+		outFile.print("Latencies per W%:");
 		double avLate=0.0;
 		//List<Integer> numOfProposalPerRatio = new ArrayList<Integer>();
 		int incrementRatio=10;
-		for (int i=0;i<latencyPerRatio.size();i++){
-			if (i != (latencyPerRatio.size()-1)){
+		for (int i=0;i<(latencyPointByZxidPerRatio.size()-1);i++){
+			//if (i != (latencyPointByZxidPerRatio.size()-1)){
 				//outFile.print("[start="+latencyPerRatio.get(i)+"End="+latencyPerRatio.get(i+1)+"] ");
 				avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
 				avLate =avLate / 1000000.0;
-				outFile.print("["+incrementRatio+"%="+avLate+"] ");
+				outFile.print(" "+incrementRatio+"%="+avLate);
 				incrementRatio+=10;
 				//numOfProposalPerRatio.add((latencyPerRatio.get(i+1)-latencyPerRatio.get(i)));
-			}
-			else{
-				//outFile.print("Last[start="+latencyPerRatio.get(i)+"End="+(latencies.size()-1)+"] ");
-				avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.size()-1, latencies);
-				avLate =avLate / 1000000.0;
-				outFile.println("["+incrementRatio+"%="+avLate+"]");
-				//numOfProposalPerRatio.add(((latencies.size()-1)-latencyPerRatio.get(i)));
-
-			}
+		//	}
+//			else{
+//				//outFile.print("Last[start="+latencyPerRatio.get(i)+"End="+(latencies.size()-1)+"] ");
+//				avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencies.size()-1, latencies);
+//				avLate =avLate / 1000000.0;
+//				outFile.println("["+incrementRatio+"%="+avLate+"]");
+//				//numOfProposalPerRatio.add(((latencies.size()-1)-latencyPerRatio.get(i)));
+//
+//			}
 
 		}
+		
+		outFile.println();
 
 		//findDist(latencies);
 
@@ -511,16 +513,16 @@ public class ProtocolStats {
 
 		// Print all latencies type into files
 		incrementRatio=10;
-		int ind=0;
+		int ind=1;
 		//latencyPointByZxidPerRatio.add((long) (latencies.size()-1));
 		System.out.println("Change Ratio to: "+incrementRatio+ " Frist zxid="+latencyPointByZxidPerRatio.get(ind));
 		for(int i=0; i<latencies.size();i++){
-			if(ind!=10 &&  i == latencyPointByZxidPerRatio.get(ind) ){
+			writeLat.println( (((double) latencies.get(i))/1000000)+","+incrementRatio);
+			if(ind!=11 &&  i == latencyPointByZxidPerRatio.get(ind) ){
 				incrementRatio+=10;
 				++ind;
 				//System.out.println("Change Ratio to: "+incrementRatio+ " i="+i+" New zxid="+latencyPointByZxidPerRatio.get(ind));
 			}
-			writeLat.println( (((double) latencies.get(i))/1000000)+","+incrementRatio);
 		}
 		outFile.println("Zxid Index: "+latencyPointByZxidPerRatio);
 

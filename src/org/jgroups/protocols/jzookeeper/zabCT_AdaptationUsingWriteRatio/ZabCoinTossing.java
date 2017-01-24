@@ -80,7 +80,7 @@ public class ZabCoinTossing extends Protocol {
 	private ProtocolStats stats = new ProtocolStats();
 	private int numABRecieved = 0;
 	@Property(name = "ZabCoinTossing_size", description = "It is ZabCoinTossing cluster size")
-	private final int N = 5;
+	private final int N = 7;
 	private final double d = (double) 27.575/1000;
 	private final int theta = 2251;
 	private int n=N-1;
@@ -108,6 +108,8 @@ public class ZabCoinTossing extends Protocol {
 	private final int ZabCT = 2;
 	private final int Zab= 1;
 	private double writeRatio= 0;
+	private int latencyIndex = 0;
+
 
 
 
@@ -262,6 +264,7 @@ public class ZabCoinTossing extends Protocol {
 				stats.setLastThroughputTime(System.currentTimeMillis());
 				stats.setStartTimeRatio(System.currentTimeMillis());
 				//timer.schedule(new Throughput(), 1000, 5000);
+				this.stats.addLatencyPointByZxidPerRatio(0);
 				reset();
 				break;
 			case ZabCoinTossingHeader.RWCHANGE:
@@ -273,6 +276,7 @@ public class ZabCoinTossing extends Protocol {
 				stats.countACKPerBroadcast.set(0);
 				stats.addNumProposalPerRatio((stats.numProposal.get()-stats.lastNumProposalRatio.get()));
 				stats.lastNumProposalRatio.set(stats.numProposal.get());
+				this.stats.addLatencyPointByZxidPerRatio(latencyIndex);
 				long now = System.currentTimeMillis();
 				long RatioTime =now-stats.getStartTimeRatio();
 				stats.addDurtionPerRatio(TimeUnit.MILLISECONDS.toSeconds(RatioTime));
@@ -286,10 +290,11 @@ public class ZabCoinTossing extends Protocol {
 				sendCountRead();
 				stats.addNumAckPerBroadcast(stats.countACKPerBroadcast.get());
 				stats.countACKPerBroadcast.set(0);
-				stats.addNumProposalPerRatio(stats.numProposal.get()-stats.lastNumProposal.get());
+				stats.addNumProposalPerRatio(stats.numProposal.get()-stats.lastNumProposalRatio.get());
 				now = System.currentTimeMillis();
 				RatioTime =now-stats.getStartTimeRatio();
 				stats.addDurtionPerRatio(TimeUnit.MILLISECONDS.toSeconds(RatioTime));
+				this.stats.addLatencyPointByZxidPerRatio(latencyIndex);
 				log.info("Printing stats");
 				//}
 				break;
@@ -516,7 +521,9 @@ public class ZabCoinTossing extends Protocol {
 		}
 		messageOrderInfo = hdrOrginal.getMessageOrderInfo();
 		queuedProposalMessage.remove(committedZxid);
-		queuedCommitMessage.put(committedZxid, hdrOrginal);
+		synchronized(queuedCommitMessage){
+			queuedCommitMessage.put(committedZxid, hdrOrginal);
+		}
 		//if(hdrOrginal==null)
 		//log.info("****hdrOrginal is null ****");
 		stats.incnumReqDelivered();
@@ -529,6 +536,7 @@ public class ZabCoinTossing extends Protocol {
 			stats.addLatency((long) (endTime - startTime));
 			sendOrderResponse(messageOrderInfo);
 			requestQueue.remove(messageOrderInfo.getId());
+			latencyIndex=stats.getLatencyIndex();
 		}
 
 	}
@@ -546,9 +554,9 @@ public class ZabCoinTossing extends Protocol {
 		Message readReplay = null;
 		CSInteractionHeader hdrResponse = null;
 		ZabCoinTossingHeader hdrOrginal = null;
-		//synchronized(queuedCommitMessage){
-		hdrOrginal = queuedCommitMessage.get(messageInfo.getOrdering());
-		//}
+		synchronized(queuedCommitMessage){
+			hdrOrginal = queuedCommitMessage.get(messageInfo.getOrdering());
+		}
 
 		if (hdrOrginal != null){
 			hdrResponse = new CSInteractionHeader(CSInteractionHeader.RESPONSER, 
@@ -988,8 +996,8 @@ public class ZabCoinTossing extends Protocol {
 						zUnit.setP(largeKey.getKey());
 						//log.info("p change to ---->"+zUnit.getP());
 						//log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
-								//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
-						stats.addResult(""+lastNumProposal+"-"+dMuliPropArr+"-"+c2p2+"-"+largeKey.getKey()+"-"+sec);
+						//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
+						stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+largeKey.getKey()+","+sec);
 					}
 					else{
 						//log.info("Must Change to ZabCT   ********************************");
@@ -1002,8 +1010,8 @@ public class ZabCoinTossing extends Protocol {
 					}
 				}
 				else{
-					stats.addInforForp("Arrival Rate=:"+lastNumProposal+"/ d*Lambda=:"+dMuliPropArr+
-							" /(Theta/n * 1/Lambda)=:"+c2p2+" /pW=:"+pW+" /p*List=:"+copypW);
+					//stats.addInforForp("Arrival Rate=:"+lastNumProposal+"/ d*Lambda=:"+dMuliPropArr+
+					//" /(Theta/n * 1/Lambda)=:"+c2p2+" /pW=:"+pW+" /p*List=:"+copypW);
 					log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 					setRuningProtocol(Zab);
 				}

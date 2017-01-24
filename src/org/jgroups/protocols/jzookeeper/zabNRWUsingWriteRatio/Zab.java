@@ -207,6 +207,7 @@ public class Zab extends Protocol {
 				stats.setLastNumReqDeliveredBefore(0);
 				stats.setLastThroughputTime(System.currentTimeMillis());
 				timer.schedule(new Throughput(), 1000, 1000);
+				this.stats.addLatencyPointByZxidPerRatio(0);
 				reset();
 				break;
 			case ZabHeader.RWCHANGE:
@@ -303,7 +304,6 @@ public class Zab extends Protocol {
 		if (is_leader) {
 			long stp = System.nanoTime();
 			hdrReq.getMessageOrderInfo().getId().setStartTime(stp);
-
 			queuedMessages.add(hdrReq);
 		} else {
 			long stf = System.nanoTime();
