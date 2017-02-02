@@ -450,7 +450,7 @@ public class Zab extends Protocol {
 				delivery.add(zxidd);
 				continue;
 			}
-			Timeout infoToFollower;
+			//Timeout infoToFollower;
 			//For Measuring d
 //			if (!(mapTimeouts.get(address).isEmpty())){
 //				infoToFollower=mapTimeouts.get(address).first();

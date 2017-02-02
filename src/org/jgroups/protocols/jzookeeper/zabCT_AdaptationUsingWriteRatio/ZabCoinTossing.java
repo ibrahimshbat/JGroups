@@ -988,6 +988,9 @@ public class ZabCoinTossing extends Protocol {
 						copypW.remove(p);							
 					}
 				}
+				else{
+					log.info("copypW is empaty !!!!!");
+				}
 				if (!copypW.isEmpty()){
 					if (runingProtocol==ZabCT){
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
@@ -995,12 +998,12 @@ public class ZabCoinTossing extends Protocol {
 						//log.info("New p id ------------->=:"+largeKey.getKey());
 						zUnit.setP(largeKey.getKey());
 						//log.info("p change to ---->"+zUnit.getP());
-						//log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
-						//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
+						log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
+						" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
 						stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+largeKey.getKey()+","+sec);
 					}
 					else{
-						//log.info("Must Change to ZabCT   ********************************");
+						log.info("Must Change to ZabCT   ********************************");
 						setRuningProtocol(ZabCT);
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
 						//log.info("p-->W=:"+copypW);

@@ -60,7 +60,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	protected final List<Address>  site_masters=new ArrayList<Address>();
 	private List<String> boxMembers  = new ArrayList<String>();
 	private List<Address> box = new ArrayList<Address>();
-	private int clusterSize = 5;
+	private int clusterSize = 7;
 	private AtomicLong localSequence = new AtomicLong();
 	private String outputDir;
 	private View view;
