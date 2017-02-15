@@ -624,8 +624,9 @@ public class ZabInfinispan extends ReceiverAdapter {
 			this.read_per = read_per;
 			this.warmStage = isWarm;
 			this.waitSSl=waitSSl;
-			this.minl = (int) waitSSl - ((int) (waitSSl * 0.25));
-			this.maxl = (int) waitSSl + ((int) (waitSSl * 0.25));
+			System.out.println(this.waitSSl);
+			this.minl = (int) this.waitSSl - ((int) (this.waitSSl * 0.25));
+			this.maxl = (int) this.waitSSl + ((int) (this.waitSSl * 0.25));
 			this.sendTime = minl + rand.nextInt((maxl - minl) + 1);
 			this.checkWRatio = checkWRatioUpdated;
 			setName("Invoker-" + COUNTER.getAndIncrement());
@@ -677,7 +678,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 						checkWRatio.incrementAndGet();
 					}
 					try {
-						Thread.sleep(sendTime);
+						Thread.sleep(this.sendTime);
 						//System.out.println("WaitTime--->"+sendTime);
 					} catch (InterruptedException e) {
 						//TODO Auto-generated catch block

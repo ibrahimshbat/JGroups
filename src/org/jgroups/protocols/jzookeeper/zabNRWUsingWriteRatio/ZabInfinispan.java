@@ -144,7 +144,8 @@ public class ZabInfinispan extends ReceiverAdapter {
 			int totalNum_msgs, int totalPerThreads, int num_threads,
 			int msg_size, String outputDir, int numOfClients, int load,
 			int numsOfWarmUp, int timeout, boolean sync, String 
-			channelName, String initiator,int clusterSize, int rf, double read) throws Throwable {
+			channelName, String initiator,int clusterSize, int rf, double read,
+			long waitCC, long waitII, long waitSS) throws Throwable {
 		this.ProtocotName = protocolName;
 		this.propsFile = props;
 		this.num_msgs = totalNum_msgs;
@@ -626,6 +627,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 
 		public Invoker(Collection<Address> dests, int num_msgs_to_send, 
 				AtomicInteger num_msgs_sent, Random random, double read_per, boolean isWarm, long waitSSl, AtomicInteger checkWRatioUpdated) {
+			//System.out.println("WaitTime--->"+waitSSl);
 			this.num_msgs_sent=num_msgs_sent;
 			this.dests.addAll(dests);
 			this.num_msgs_to_send=num_msgs_to_send;
@@ -635,8 +637,9 @@ public class ZabInfinispan extends ReceiverAdapter {
 			this.warmStage = isWarm;
 			setName("Invoker-" + COUNTER.getAndIncrement());
 			this.waitSSl=waitSSl;
-			this.minl = (int) waitSSl - ((int) (waitSSl * 0.25));
-			this.maxl = (int) waitSSl + ((int) (waitSSl * 0.25));
+			System.out.println(" this.waitSSl = "+this.waitSSl);;
+			this.minl = (int) this.waitSSl - ((int) (this.waitSSl * 0.25));
+			this.maxl = (int) this.waitSSl + ((int) (this.waitSSl * 0.25));
 			this.sendTime = minl + rand.nextInt((maxl - minl) + 1);
 			this.checkWRatio = checkWRatioUpdated;
 			setName("Invoker-" + COUNTER.getAndIncrement());
@@ -689,7 +692,8 @@ public class ZabInfinispan extends ReceiverAdapter {
 						System.out.println("Write Ratio change to "+read_per+  " /threshold=" +threshold+" /i="+i);
 					}
 					try {
-						Thread.sleep(sendTime);
+						//System.out.println("WaitTime--->"+sendTime);
+						Thread.sleep(this.sendTime);
 						//System.out.println("WaitTime--->"+sendTime);
 					} catch (InterruptedException e) {
 						//TODO Auto-generated catch block
@@ -987,6 +991,8 @@ public class ZabInfinispan extends ReceiverAdapter {
 		int rf=0;
 		int cSize = 10;
 		double read =0.0;
+		long waitcc=0, waitii=0, waitss=0;
+
 
 
 
@@ -1069,6 +1075,19 @@ public class ZabInfinispan extends ReceiverAdapter {
 				read = Double.parseDouble(args[++i]);
 				continue;
 			}
+			if("-waitC".equals(args[i])) {
+				waitcc = (long) Integer.parseInt(args[++i]);
+				continue;
+			}
+			if("-waitIn".equals(args[i])) {
+				waitii = (long) Integer.parseInt(args[++i]);
+				continue;
+			}
+			if("-waitSS".equals(args[i])) {
+				waitss =  (long) Integer.parseInt(args[++i]);
+				System.out.println("waitss=***"+waitss);
+				continue;
+			}
 
 		}
 
@@ -1078,7 +1097,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			test.init(members, name, propsFile, totalMessages,
 					numberOfMessages, numsThreads, msgSize, 
 					outputDir, numOfClients, load, numWarmUp, timeout
-					, sync, channelName, initiator, cSize, rf, read);
+					, sync, channelName, initiator, cSize, rf, read, waitcc, waitii, waitss);
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

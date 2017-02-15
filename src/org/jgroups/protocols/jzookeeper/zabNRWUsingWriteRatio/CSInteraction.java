@@ -127,7 +127,6 @@ public class CSInteraction extends Protocol {
 				handleOrderingWriteResponse(header);
 				break;
 			}
-			return null;
 		case Event.VIEW_CHANGE:
 			handleViewChange((View) event.getArg());
 			if (log.isTraceEnabled())

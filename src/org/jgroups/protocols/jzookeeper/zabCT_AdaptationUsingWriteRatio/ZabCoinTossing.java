@@ -81,10 +81,19 @@ public class ZabCoinTossing extends Protocol {
 	private int numABRecieved = 0;
 	@Property(name = "ZabCoinTossing_size", description = "It is ZabCoinTossing cluster size")
 	private final int N = 7;
-	private final double d = (double) 27.575/1000;
-	private final int theta = 2251;
+	private final int THETA_N5 = 2251;
+	private final int THETA_N7 = 1639;
+	private final double D_N5 = 27.575;
+	private final double D_N7 = 38.153;
+	private final double DWAITTIME_N5 = 15.118;//wait time 50 stager to make it like-like
+	private final double DWAITTIME_N7 = 25.747;//wait time 50 stager to make it like-like
+	private final double THETAWAITTIME_N5 = 2250.333; //It is the same as THETA_N5
+	private final double THETAWAITTIME_N7 = 1610.667; //It is the same as THETA_N7
+
+	private int theta;
+	private double d;
+
 	private int n=N-1;
-	private double thDivByn= (double) theta/n;
 	@Property(name = "tail_timeout", description = "pending Proposal timeout in Millisecond, before deliver")
 	private AtomicInteger tailTimeout = new AtomicInteger(2000);
 	private Timer timerForTail = new Timer();	
@@ -110,6 +119,9 @@ public class ZabCoinTossing extends Protocol {
 	private double writeRatio= 0;
 	private int latencyIndex = 0;
 
+
+	//For count Acks in leader
+	private Timer timerAck = new Timer();
 
 
 
@@ -152,10 +164,19 @@ public class ZabCoinTossing extends Protocol {
 		messageStore.clear();
 		latestZxidSeen = 0;
 		//ackedNextProposal=false;
-
+		if (N==5){
+	        d = (double) D_N5/1000;
+			theta = THETA_N5;
+		}
+		else{
+			d = (double) D_N7/1000;
+			theta = THETA_N7;
+		}
 		//zUnit.setP(1.0);
 		this.pW=this.stats.findpW(N, zabMembers.size());
+		this.pW.remove(0.0835);
 		log.info("pW====="+this.pW);
+
 		if(!is_leader){
 			//timerForTail.schedule(new TailTimeOutTask(), 5, 2000);//For tail proposal timeout
 			measureXd.schedule(new MeasuePropArrivalRate(), 5, 1000);//For tail proposal timeout
@@ -238,6 +259,8 @@ public class ZabCoinTossing extends Protocol {
 				ackToProcess.add(hdr.getZxid());
 				break;
 			case ZabCoinTossingHeader.ACKZAB:
+				stats.countAckMessage.incrementAndGet();
+				stats.leaderCountACK.incrementAndGet();
 				ackToProcess.add(hdr.getZxid());
 				break;
 			case ZabCoinTossingHeader.STARTWORKLOAD:
@@ -265,18 +288,25 @@ public class ZabCoinTossing extends Protocol {
 				stats.setStartTimeRatio(System.currentTimeMillis());
 				//timer.schedule(new Throughput(), 1000, 5000);
 				this.stats.addLatencyPointByZxidPerRatio(0);
+				if(is_leader)
+					timerAck.schedule(new Ack(), 1000, 5000);
+
 				reset();
 				break;
 			case ZabCoinTossingHeader.RWCHANGE:
 				info = (String) msg.getObject();
 				writeRatio = Double.parseDouble(info);
 				log.info("Notifcation, W% changed to "+writeRatio);
+				stats.addAcksPerRatio(stats.leaderCountACK.get());
+				stats.leaderCountACK.set(0);
 				this.stats.addLatencyPointForRatio();
 				stats.addNumAckPerBroadcast(stats.countACKPerBroadcast.get());
 				stats.countACKPerBroadcast.set(0);
 				stats.addNumProposalPerRatio((stats.numProposal.get()-stats.lastNumProposalRatio.get()));
 				stats.lastNumProposalRatio.set(stats.numProposal.get());
 				this.stats.addLatencyPointByZxidPerRatio(latencyIndex);
+				stats.addThroughputPerRatio((stats.getnumReqDelivered()-stats.perviousthroughputPerRatio.get()));
+				stats.perviousthroughputPerRatio.set(stats.getnumReqDelivered());
 				long now = System.currentTimeMillis();
 				long RatioTime =now-stats.getStartTimeRatio();
 				stats.addDurtionPerRatio(TimeUnit.MILLISECONDS.toSeconds(RatioTime));
@@ -284,17 +314,20 @@ public class ZabCoinTossing extends Protocol {
 				break;
 			case ZabCoinTossingHeader.FINISHED:
 				log.info("I Have notfied from Client----> "+msg.getSrc());
-				//if (clientFinished.incrementAndGet() == 10) {
-				running = false;
-				timer.cancel();
-				sendCountRead();
+				stats.addAcksPerRatio(stats.leaderCountACK.get());
+				stats.leaderCountACK.set(0);
 				stats.addNumAckPerBroadcast(stats.countACKPerBroadcast.get());
 				stats.countACKPerBroadcast.set(0);
 				stats.addNumProposalPerRatio(stats.numProposal.get()-stats.lastNumProposalRatio.get());
+				stats.addThroughputPerRatio((stats.getnumReqDelivered()-stats.perviousthroughputPerRatio.get()));
 				now = System.currentTimeMillis();
 				RatioTime =now-stats.getStartTimeRatio();
 				stats.addDurtionPerRatio(TimeUnit.MILLISECONDS.toSeconds(RatioTime));
 				this.stats.addLatencyPointByZxidPerRatio(latencyIndex);
+				//if (clientFinished.incrementAndGet() == 10) {
+				running = false;
+				timer.cancel();
+				sendCountRead();
 				log.info("Printing stats");
 				//}
 				break;
@@ -564,7 +597,7 @@ public class ZabCoinTossing extends Protocol {
 			readReplay = new Message(messageInfo.getId().getOriginator()).putHeader((short) 79, hdrResponse);
 		}
 		else{//Simulate return null if the requested data is not stored in Zab
-			log.info(" Read null%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+			log.info(" Read null%%%%");
 			hdrResponse = new CSInteractionHeader(CSInteractionHeader.RESPONSER, messageInfo);
 			readReplay = new Message(messageInfo.getId().getOriginator()).putHeader((short) 79, hdrResponse);
 		}
@@ -625,7 +658,7 @@ public class ZabCoinTossing extends Protocol {
 		numReadCoundRecieved++;
 		if(numReadCoundRecieved==(zabMembers.size()-1)){
 			System.out.println("Print Total request (R and W)="+stats.getnumReqDelivered());
-			stats.printProtocolStats(queuedCommitMessage.size(), N, (int) (percentRW*100), waitSentTime);	
+			stats.printProtocolStats(queuedCommitMessage.size(), N, (int) (percentRW*100), waitSentTime, is_leader);	
 
 		}
 
@@ -988,9 +1021,6 @@ public class ZabCoinTossing extends Protocol {
 						copypW.remove(p);							
 					}
 				}
-				else{
-					log.info("copypW is empaty !!!!!");
-				}
 				if (!copypW.isEmpty()){
 					if (runingProtocol==ZabCT){
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
@@ -999,12 +1029,13 @@ public class ZabCoinTossing extends Protocol {
 						zUnit.setP(largeKey.getKey());
 						//log.info("p change to ---->"+zUnit.getP());
 						log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
-						" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
+								" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
 						stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+largeKey.getKey()+","+sec);
 					}
 					else{
+						log.info("copypW is empty !!!!!");
 						log.info("Must Change to ZabCT   ********************************");
-						setRuningProtocol(ZabCT);
+						//setRuningProtocol(ZabCT);
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
 						//log.info("p-->W=:"+copypW);
 						//log.info("New p id ------------->=:"+largeKey.getKey());
@@ -1015,15 +1046,16 @@ public class ZabCoinTossing extends Protocol {
 				else{
 					//stats.addInforForp("Arrival Rate=:"+lastNumProposal+"/ d*Lambda=:"+dMuliPropArr+
 					//" /(Theta/n * 1/Lambda)=:"+c2p2+" /pW=:"+pW+" /p*List=:"+copypW);
+					
 					log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-					setRuningProtocol(Zab);
+					log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
+							" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
+					//setRuningProtocol(Zab);
 				}
 
 			}
-			//			else{
-			//				log.info("Must Change to Zab    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-			//				setRuningProtocol(Zab);
-			//			}
+			//log.info("ArrivalRate=:"+lastNumProposal);
+			//log.info("p="+zUnit.getP());
 			stats.lastNumProposal.set(stats.numProposal.get());
 		}
 		public double findCondtion2Part2(int numProposalPerec){
@@ -1032,6 +1064,36 @@ public class ZabCoinTossing extends Protocol {
 			return c2p2;
 		}
 
+	}
+
+	class Ack extends TimerTask {
+
+		public Ack() {
+
+		}
+
+		private long startTime = 0;
+		private long currentTime = 0;
+		private double currentAck = 0;
+		private int CurrentNumAcks = 0;
+
+		@Override
+		public void run() {
+			startTime = stats.getLastAcktTime();
+			currentTime = System.currentTimeMillis();
+			CurrentNumAcks=stats.countAckMessage.get();
+			currentAck = (((double)CurrentNumAcks - stats
+					.getLastNumAcks()) / ((double)(currentTime - startTime)/1000.0));
+			stats.setLastNumAcks(CurrentNumAcks);
+			stats.setLastAckTime(currentTime);
+			stats.addAck(currentAck);
+		}
+
+		public String convertLongToTimeFormat(long time) {
+			Date date = new Date(time);
+			SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
+			return longToTime.format(date);
+		}
 	}
 
 }

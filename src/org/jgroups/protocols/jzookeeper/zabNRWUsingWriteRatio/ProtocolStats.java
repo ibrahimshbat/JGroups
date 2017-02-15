@@ -57,6 +57,15 @@ public class ProtocolStats {
 	private AtomicInteger countMessageFollower;
 	public AtomicInteger countHead;
 	public AtomicInteger countTail;
+	//For compare number of Acks between Zab and ZabCT Adaptation
+	public AtomicInteger countAckMessage;
+	private long startAckTime=0;
+	private long lastAckTime=0;
+	private int lastAckcount=0;
+	private List<Double> acks;
+	public AtomicInteger countAckPerWRatio;
+	private List<Integer> acksPerRatio;
+	private List<Long> durtionPerRatio;
 
 	private static PrintWriter outFile;
 	private static PrintWriter railDelayPrint;
@@ -74,6 +83,14 @@ public class ProtocolStats {
 	public String info=null;
 	private List<Integer> latencyPerRatio;
 	private List<Integer> latencyPointByZxidPerRatio;
+	public AtomicInteger numProposal;
+	private List<Integer> numProposalPerRatio;
+	public AtomicInteger lastNumProposalRatio;
+	private List<Integer> throughputPerRatio;
+	private long startTimeRatio=System.currentTimeMillis();
+
+	public AtomicInteger perviousthroughputPerRatio;
+
 
 
 
@@ -106,6 +123,9 @@ public class ProtocolStats {
 		this.latencyProposalForwardST = Collections
 				.synchronizedMap(new HashMap<MessageId, Long>());
 		this.throughputs = new ArrayList<Double>();
+		this.acks = new ArrayList<Double>();
+
+
 		this.recievedRequestTime = new ArrayList<Long>();
 		this.throughput = 0;
 		this.protocolName = protocolName;
@@ -127,7 +147,17 @@ public class ProtocolStats {
 		this.latencyPerRatio = new ArrayList<Integer>();
 		this.latencyPerRatio.add(0);// Frist location should be index 0
 		this.latencyPointByZxidPerRatio  = new ArrayList<Integer>();
-		System.out.println("Info="+info);
+		this.countAckMessage = new AtomicInteger(0);
+		this.countAckPerWRatio = new AtomicInteger(0);
+		this.acksPerRatio  = new ArrayList<Integer>();
+		this.numProposal = new AtomicInteger(0);
+		this.numProposalPerRatio = new ArrayList<Integer>();
+		this.lastNumProposalRatio = new AtomicInteger(0);
+
+		this.perviousthroughputPerRatio = new AtomicInteger(0);
+		this.throughputPerRatio = new ArrayList<Integer>();
+		this.durtionPerRatio = new ArrayList<Long>();
+
 
 		System.out.println("Dir="+outDir);
 		if (info.length()>1){
@@ -401,7 +431,50 @@ public class ProtocolStats {
 		return latencies.size()-1;
 	}
 
-	public void printProtocolStats(int deliveredRequest, int cliuterSize, int perRW) {
+	//For counting Acks in Leader
+	public void addAck(double count) {
+		acks.add(count);
+	}
+	public int getLastNumAcks() {
+		return lastAckcount;
+	}
+	public void setLastNumAcks(int numAcks) {
+		this.lastAckcount=numAcks;
+	}
+	public void setLastAckTime(long lastTime) {
+		this.lastAckTime=lastTime;
+	}
+	public long getLastAcktTime() {
+		return lastAckTime;
+	}
+	//For counting Acks in Leader
+	public void addAcksPerRatio(int count) {
+		acksPerRatio.add(count);
+	}
+
+	// This method uses for count Proposals for each W% case
+	public void addNumProposalPerRatio(int numProposal) {
+		numProposalPerRatio.add(numProposal);
+	}
+
+	// This method uses for measure throughput per write ratio
+	public void addThroughputPerRatio(int thr) {
+		throughputPerRatio.add(thr);
+	}
+
+	// This method uses for store duration for each W% case
+	public void addDurtionPerRatio(long durtion) {
+		durtionPerRatio.add(durtion);
+	}
+
+	public long getStartTimeRatio() {
+		return startTimeRatio;
+	}
+	public void setStartTimeRatio(long start) {
+		this.startTimeRatio=start;
+	}
+	
+	public void printProtocolStats(int deliveredRequest, int cliuterSize, int perRW, boolean is_leader) {
 
 		double avgAllD = 0, avgRead=0, allRWAvg=0, throughputRate =0, tempSumThr=0, per50th=0, per90th=0, 
 				per99th=0, per95th=0;
@@ -483,24 +556,24 @@ public class ProtocolStats {
 		int incrementRatio=10;
 		for (int i=0;i<(latencyPointByZxidPerRatio.size()-1);i++){
 			//if (i != (latencyPointByZxidPerRatio.size()-1)){
-				//outFile.print("[start="+latencyPerRatio.get(i)+"End="+latencyPerRatio.get(i+1)+"] ");
-				avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
-				avLate =avLate / 1000000.0;
-				outFile.print(" "+incrementRatio+"%="+avLate);
-				incrementRatio+=10;
-				//numOfProposalPerRatio.add((latencyPerRatio.get(i+1)-latencyPerRatio.get(i)));
-		//	}
-//			else{
-//				//outFile.print("Last[start="+latencyPerRatio.get(i)+"End="+(latencies.size()-1)+"] ");
-//				avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencies.size()-1, latencies);
-//				avLate =avLate / 1000000.0;
-//				outFile.println("["+incrementRatio+"%="+avLate+"]");
-//				//numOfProposalPerRatio.add(((latencies.size()-1)-latencyPerRatio.get(i)));
-//
-//			}
+			//outFile.print("[start="+latencyPerRatio.get(i)+"End="+latencyPerRatio.get(i+1)+"] ");
+			avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
+			avLate =avLate / 1000000.0;
+			outFile.print(" "+incrementRatio+"%="+avLate);
+			incrementRatio+=10;
+			//numOfProposalPerRatio.add((latencyPerRatio.get(i+1)-latencyPerRatio.get(i)));
+			//	}
+			//			else{
+			//				//outFile.print("Last[start="+latencyPerRatio.get(i)+"End="+(latencies.size()-1)+"] ");
+			//				avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencies.size()-1, latencies);
+			//				avLate =avLate / 1000000.0;
+			//				outFile.println("["+incrementRatio+"%="+avLate+"]");
+			//				//numOfProposalPerRatio.add(((latencies.size()-1)-latencyPerRatio.get(i)));
+			//
+			//			}
 
 		}
-		
+
 		outFile.println();
 
 		//findDist(latencies);
@@ -532,8 +605,47 @@ public class ProtocolStats {
 		for(long lat:RWLatencies)
 			allLat.println((double) (((double) lat)/1000000));
 
+		outFile.println("Proposals per Ratio: "+numProposalPerRatio);
+		//For count ACKS in leader
+		if(is_leader){
+			double sumAcks=0.0;
+			for (double ack:acks){
+				sumAcks+=ack;
+			}
+			sumAcks = sumAcks/acks.size();
+			outFile.println("Ack Size: " + acks.size());
+			outFile.println("Ack Rates: " + acks);
+			outFile.println("Ack Rate average: " + sumAcks);
 
+			int sumAcksPerRatio=0;
+			for (int ack:acksPerRatio){
+				sumAcksPerRatio+=ack;
+			}
+			sumAcksPerRatio = sumAcksPerRatio/acksPerRatio.size();
+			outFile.println("Ack per Write Ratio Size: " + acksPerRatio.size());
+			outFile.println("Ack per Write Ratio Rates: " + acksPerRatio);
+			outFile.println("Ack per Write Ratio Rate average: " + sumAcksPerRatio);
+		}
 
+	
+		outFile.println("Throughput per Write Ratio: " + throughputPerRatio);
+		outFile.println("Duration per Write Ratio: " + durtionPerRatio);
+		
+		outFile.print("Throughput VS Time (sec) Took per W%:");
+		incrementRatio=10;
+		for (int i=0;i<throughputPerRatio.size();i++){
+			outFile.print(" "+incrementRatio+"%="+ throughputPerRatio.get(i)+"/"+durtionPerRatio.get(i));
+			incrementRatio+=10;
+		}
+		outFile.println();
+		outFile.print("Throughput/Time (sec) Took per W%:");
+		incrementRatio=10;
+		for (int i=0;i<throughputPerRatio.size();i++){
+			outFile.print(" "+incrementRatio+"%="+   ((double) throughputPerRatio.get(i)/durtionPerRatio.get(i)));
+			incrementRatio+=10;
+		}
+
+		outFile.println();
 		outFile.println("Test Generated at "
 				+ new Date()
 				+ " /Lasted for = "
