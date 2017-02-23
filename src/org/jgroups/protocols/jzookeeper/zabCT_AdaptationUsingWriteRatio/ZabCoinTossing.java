@@ -82,13 +82,13 @@ public class ZabCoinTossing extends Protocol {
 	@Property(name = "ZabCoinTossing_size", description = "It is ZabCoinTossing cluster size")
 	private final int N = 7;
 	private final int THETA_N5 = 2251;
-	private final int THETA_N7 = 1639;
+	private final int THETA_N7 = 1639 ;//2250;//1639;
 	private final double D_N5 = 27.575;
 	private final double D_N7 = 38.153;
 	private final double DWAITTIME_N5 = 15.118;//wait time 50 stager to make it like-like
 	private final double DWAITTIME_N7 = 25.747;//wait time 50 stager to make it like-like
 	private final double THETAWAITTIME_N5 = 2250.333; //It is the same as THETA_N5
-	private final double THETAWAITTIME_N7 = 1610.667; //It is the same as THETA_N7
+	private final double THETAWAITTIME_N7 = 2250;//1610.667; //It is the same as THETA_N7
 
 	private int theta;
 	private double d;
@@ -116,7 +116,7 @@ public class ZabCoinTossing extends Protocol {
 	private int runingProtocol = 2;
 	private final int ZabCT = 2;
 	private final int Zab= 1;
-	private double writeRatio= 0;
+	private double writeRatio= 1.0; //1.0 mean all requests are read
 	private int latencyIndex = 0;
 
 
@@ -165,7 +165,7 @@ public class ZabCoinTossing extends Protocol {
 		latestZxidSeen = 0;
 		//ackedNextProposal=false;
 		if (N==5){
-	        d = (double) D_N5/1000;
+			d = (double) D_N5/1000;
 			theta = THETA_N5;
 		}
 		else{
@@ -271,13 +271,13 @@ public class ZabCoinTossing extends Protocol {
 				waitSentTime = Long.parseLong(waitSTString);
 				String r = info.split(":")[1];
 				percentRW = Double.parseDouble(r);
-				writeRatio=1-percentRW;
-				if (percentRW==0.0){
-					thshot+=1000000;
-				}
-				else{
-					thshot+=(1000000*percentRW);
-				}
+				//writeRatio=1-percentRW;
+				//if (percentRW==0.0){
+					//thshot+=1000000;
+				//}
+				//else{
+					//thshot+=(1000000*percentRW);
+				//}
 				//percentRW = (Double) msg.getObject();
 				numberOfSenderInEachClient = Integer.parseInt(info.split(":")[2]);
 				this.stats = new ProtocolStats(ProtocolName, 10,
@@ -327,6 +327,7 @@ public class ZabCoinTossing extends Protocol {
 				//if (clientFinished.incrementAndGet() == 10) {
 				running = false;
 				timer.cancel();
+				measureXd.cancel();
 				sendCountRead();
 				log.info("Printing stats");
 				//}
@@ -984,13 +985,13 @@ public class ZabCoinTossing extends Protocol {
 
 	class MeasuePropArrivalRate extends TimerTask {
 		private int lastNumProposal=0;
-		double c2p2=0; //store result of (((double) theta/n) * ((double) 1/numProposalPerec));
-		double p=0.0;
-		double dMuliPropArr=0.0;
-		int sec=0;
-		String result=null;
-		SortedSet<Double> ps = new TreeSet<Double>();
-		DecimalFormat roundValue = new DecimalFormat("#.000");
+		private double c2p2=0; //store result of (((double) theta/n) * ((double) 1/numProposalPerec));
+		private double p=0.0;
+		private double dMuliPropArr=0.0;
+		private int sec=0, count0=0, countNo0=0 ;
+		private String result=null;
+		private SortedSet<Double> ps = new TreeSet<Double>();
+		private DecimalFormat roundValue = new DecimalFormat("#.000");
 		public MeasuePropArrivalRate() {
 
 		}
@@ -1031,6 +1032,7 @@ public class ZabCoinTossing extends Protocol {
 						log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
 								" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
 						stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+largeKey.getKey()+","+sec);
+						log.info("outstandingProposals="+outstandingProposals.size());
 					}
 					else{
 						log.info("copypW is empty !!!!!");
@@ -1046,54 +1048,105 @@ public class ZabCoinTossing extends Protocol {
 				else{
 					//stats.addInforForp("Arrival Rate=:"+lastNumProposal+"/ d*Lambda=:"+dMuliPropArr+
 					//" /(Theta/n * 1/Lambda)=:"+c2p2+" /pW=:"+pW+" /p*List=:"+copypW);
-					
+
 					log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 					log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
 							" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
 					//setRuningProtocol(Zab);
 				}
 
+				/*if(writeRatio<=0.5 && lastNumProposal<1100){
+					log.info("writeRatio="+writeRatio);
+					long zxidACK = lastZxidCommitted+1;
+					log.info("Before send ACK lastZxidCommitted="+lastZxidCommitted);
+					ZabCoinTossingHeader hdrACKCT = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACKZAB, zxidACK);
+					Message ackMessage = new Message().putHeader(id, hdrACKCT);
+					//ackMessage.setFlag(Message.Flag.DONT_BUNDLE);
+					try{
+						for(Address addr:zabMembers){
+							if (local_addr.equals(addr))
+								continue;
+							Message cpy = ackMessage.copy();
+							cpy.setDest(addr);
+							down_prot.down(new Event(Event.MSG, cpy));  
+							//stats.countAck.incrementAndGet();
+						}	
+						ackToProcess.add(zxidACK);
+					}catch(Exception ex) {
+						log.error("failed proposing message to members");
+					} 
+					log.info("writeRatio="+writeRatio);
+					log.info("countNo0="+(++countNo0));
+					log.info("After send ACK lastZxidCommitted="+lastZxidCommitted);
+					
+				}*/
 			}
-			//log.info("ArrivalRate=:"+lastNumProposal);
-			//log.info("p="+zUnit.getP());
-			stats.lastNumProposal.set(stats.numProposal.get());
-		}
-		public double findCondtion2Part2(int numProposalPerec){
-			double c2p2=0.0;
-			c2p2 = (((double) theta/n) * ((double) 1/numProposalPerec));
-			return c2p2;
-		}
+		/*This tests how many we have arrival rate=0 when we run ZanCT with n=7
+		 * And we we send ACK to all, yes, it solves the block issue but latency 
+		 * becomes higer. 
+		 * */
+		 /* else{
+				long zxidACK = lastZxidCommitted+1;
+				ZabCoinTossingHeader hdrACKCT = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACKZAB, zxidACK);
+				Message ackMessage = new Message().putHeader(id, hdrACKCT);
+				//ackMessage.setFlag(Message.Flag.DONT_BUNDLE);
+				try{
+					for(Address addr:zabMembers){
+						if (local_addr.equals(addr))
+							continue;
+						Message cpy = ackMessage.copy();
+						cpy.setDest(addr);
+						down_prot.down(new Event(Event.MSG, cpy));  
+						//stats.countAck.incrementAndGet();
+					}	
+					ackToProcess.add(zxidACK);
+				}catch(Exception ex) {
+					log.error("failed proposing message to members");
+				} 
+				log.info("count0="+(++count0));
+			}
+			*/
+
+		//log.info("ArrivalRate=:"+lastNumProposal);
+		//log.info("p="+zUnit.getP());
+		stats.lastNumProposal.set(stats.numProposal.get());
+	}
+	public double findCondtion2Part2(int numProposalPerec){
+		double c2p2=0.0;
+		c2p2 = (((double) theta/n) * ((double) 1/numProposalPerec));
+		return c2p2;
+	}
+
+}
+
+class Ack extends TimerTask {
+
+	public Ack() {
 
 	}
 
-	class Ack extends TimerTask {
+	private long startTime = 0;
+	private long currentTime = 0;
+	private double currentAck = 0;
+	private int CurrentNumAcks = 0;
 
-		public Ack() {
-
-		}
-
-		private long startTime = 0;
-		private long currentTime = 0;
-		private double currentAck = 0;
-		private int CurrentNumAcks = 0;
-
-		@Override
-		public void run() {
-			startTime = stats.getLastAcktTime();
-			currentTime = System.currentTimeMillis();
-			CurrentNumAcks=stats.countAckMessage.get();
-			currentAck = (((double)CurrentNumAcks - stats
-					.getLastNumAcks()) / ((double)(currentTime - startTime)/1000.0));
-			stats.setLastNumAcks(CurrentNumAcks);
-			stats.setLastAckTime(currentTime);
-			stats.addAck(currentAck);
-		}
-
-		public String convertLongToTimeFormat(long time) {
-			Date date = new Date(time);
-			SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
-			return longToTime.format(date);
-		}
+	@Override
+	public void run() {
+		startTime = stats.getLastAcktTime();
+		currentTime = System.currentTimeMillis();
+		CurrentNumAcks=stats.countAckMessage.get();
+		currentAck = (((double)CurrentNumAcks - stats
+				.getLastNumAcks()) / ((double)(currentTime - startTime)/1000.0));
+		stats.setLastNumAcks(CurrentNumAcks);
+		stats.setLastAckTime(currentTime);
+		stats.addAck(currentAck);
 	}
+
+	public String convertLongToTimeFormat(long time) {
+		Date date = new Date(time);
+		SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
+		return longToTime.format(date);
+	}
+}
 
 }

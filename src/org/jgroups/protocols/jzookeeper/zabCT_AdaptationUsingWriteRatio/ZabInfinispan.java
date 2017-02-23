@@ -201,7 +201,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		}
 
 	}
-	
+
 	void stop() {
 		if(disp != null)
 			disp.stop();
@@ -643,22 +643,31 @@ public class ZabInfinispan extends ReceiverAdapter {
 			Object[] get_args={0};
 			MethodCall get_call=new MethodCall(GET, get_args);
 			MethodCall put_call=new MethodCall(PUT, put_args);
-			RequestOptions get_options=new RequestOptions(ResponseMode.GET_ALL, timeout, true, null);
-			RequestOptions put_options=new RequestOptions(sync ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout, true, null);
-
+			RequestOptions get_options;
+			RequestOptions put_options;
+			if(warmUp){
+				get_options=new RequestOptions(ResponseMode.GET_ALL, timeout, true, null);
+				put_options=new RequestOptions(sync ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout, true, null);
+			}
+			else {
+				get_options=new RequestOptions(ResponseMode.GET_NONE, timeout, true, null);
+				put_options=new RequestOptions(ResponseMode.GET_NONE, timeout, true, null);
+				get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
+				put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
+			}
 			// Don't use bundling as we have sync requests (e.g. GETs) regardless of whether we set sync=true or false
-			get_options.setFlags(Message.Flag.DONT_BUNDLE);
-			put_options.setFlags(Message.Flag.DONT_BUNDLE);
+			//get_options.setFlags(Message.Flag.DONT_BUNDLE);
+			//put_options.setFlags(Message.Flag.DONT_BUNDLE);
 			//get_options.setFlags(Message.Flag.OOB);
 
 			if(oob) {
 				get_options.setFlags(Message.Flag.OOB);
 				put_options.setFlags(Message.Flag.OOB);
 			}
-			if(sync) {
-				get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
-				put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
-			}
+			//if(sync) {
+			//get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
+			//put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
+			//}
 			if(use_anycast_addrs) {
 				get_options.useAnycastAddresses(true);;
 				put_options.useAnycastAddresses(true);
@@ -678,7 +687,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 						checkWRatio.incrementAndGet();
 					}
 					try {
-						Thread.sleep(this.sendTime);
+						Thread.sleep(this.waitSSl);
 						//System.out.println("WaitTime--->"+sendTime);
 					} catch (InterruptedException e) {
 						//TODO Auto-generated catch block
@@ -700,7 +709,6 @@ public class ZabInfinispan extends ReceiverAdapter {
 					}
 					else {    // sync or async (based on value of 'sync') PUT
 						//System.out.println(" **** PUT ****");
-
 						synchronized (members) {
 							removeBoxMembers(members);
 						}				
@@ -717,7 +725,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 				}
 			}
 		}
-		
+
 		public void changeWaitTime(long newWaitTime){
 			System.out.println("^^^^^^^Call changeWaitTime waitSS="+this.waitSSl);
 			this.waitSSl = newWaitTime;
@@ -725,7 +733,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			this.minl = (int) this.waitSSl - ((int) (this.waitSSl * 0.25));
 			this.maxl = (int) this.waitSSl + ((int) (this.waitSSl * 0.25));
 		}
-		
+
 		public void changeReadRatio(double newRatio){
 			this.read_per=Double.parseDouble(roundValue.format(newRatio));
 		}
@@ -1102,7 +1110,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	static void help() {
 		System.out.println("UPerf [-props <props>] [-name name] [-xsite <true | false>] [-boxes String[]]");
 	}
-	
+
 	class ChekerWriteRatio extends TimerTask {
 		private final int threshold =24;
 		private double read_p = 0.9;

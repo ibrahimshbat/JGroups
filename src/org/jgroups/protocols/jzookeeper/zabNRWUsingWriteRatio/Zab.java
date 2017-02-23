@@ -70,7 +70,7 @@ public class Zab extends Protocol {
 	private ProtocolStats stats = new ProtocolStats();
 	@Property(name = "Zab_size", description = "It is Zab cluster size")
 	private Timer timer = new Timer();
-	private int clusterSize = 5;
+	private int clusterSize = 7;
 	private static int warmUp = 0;
 
 	//private Timer checkFinished = new Timer();	
@@ -472,7 +472,7 @@ public class Zab extends Protocol {
 		stats.setEndThroughputTime(System.currentTimeMillis());
 		//log.info("Zxid=:"+dZxid+" Time="+System.currentTimeMillis());
 		//log.info("Zxid=:"+dZxid);
-		//log.info("Zxid=:"+dZxid);
+		log.info("Zxid=:"+ddZxid);
 		if (requestQueue.contains(info.getId())) {
 			long startTime = info.getId().getStartTime();
 			long endTime = System.nanoTime();

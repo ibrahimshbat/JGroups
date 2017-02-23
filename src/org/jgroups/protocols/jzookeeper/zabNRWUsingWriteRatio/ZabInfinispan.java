@@ -60,7 +60,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	protected final List<Address>  site_masters=new ArrayList<Address>();
 	private List<String> boxMembers  = new ArrayList<String>();
 	private List<Address> box = new ArrayList<Address>();
-	private int clusterSize = 5;
+	private int clusterSize = 7;
 	private AtomicLong localSequence = new AtomicLong();
 	private String outputDir;
 	private View view;
@@ -171,7 +171,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		channel=new JChannel(propsFile);
 		System.out.println("this.ProtocotName := " + this.ProtocotName+ " propsFile :="+propsFile+
 				"this.num_threads "+this.num_threads + " outdir := "+outputDir);
-		
+
 		disp=new RpcDispatcher(channel, null, this, this);
 		disp.setMethodLookup(new MethodLookup() {
 			public Method findMethod(short id) {
@@ -236,7 +236,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		System.out.println("** view: " + new_view);
 		view = new_view;
 		List<Address> mbrs = new_view.getMembers();
-		
+
 		if (mbrs.size() == clusterSize+2) {
 			for (int i=2;i<mbrs.size();i++){
 				box.add(mbrs.get(i));
@@ -279,7 +279,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			}
 		}
 	}
-	
+
 	public Results startWarm() throws Throwable {
 		addSiteMastersToMembers();
 
@@ -455,16 +455,16 @@ public class ZabInfinispan extends ReceiverAdapter {
 			dest = members;
 		else
 			dest = null;
-		
+
 		//First, it calls for warmUp 
 		RequestOptions options=new RequestOptions(ResponseMode.GET_ALL, 0, anycastRequests);
 		options.setFlags(Message.Flag.OOB, Message.Flag.DONT_BUNDLE, Message.NO_FC);
 		RspList<Object> responses=disp.callRemoteMethods(dest, new MethodCall(STARTWARM), options);
 		System.out.println("after sending rpc for WarmUp");
-		
+
 		sendStartNotify();
 		Thread.sleep(30);
-		
+
 		responses=disp.callRemoteMethods(dest, new MethodCall(START), options);
 		System.out.println("after sending rpc real test");
 		sendCompleteNotify();
@@ -569,7 +569,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			return null;
 		}
 	}
-	
+
 	public void sendCompleteNotify(){
 		ZabHeader hdrReq = new ZabHeader(ZabHeader.FINISHED);
 		Message finishedMessage = new Message().putHeader((short) 78, hdrReq);
@@ -587,7 +587,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			}
 		}
 	}
-	
+
 	public void sendStartNotify(){
 		ZabHeader hdrReq = new ZabHeader(ZabHeader.STARTWORKLOAD);
 		Message startedMessage = new Message().putHeader((short) 78, hdrReq);
@@ -656,22 +656,31 @@ public class ZabInfinispan extends ReceiverAdapter {
 			Object[] get_args={0};
 			MethodCall get_call=new MethodCall(GET, get_args);
 			MethodCall put_call=new MethodCall(PUT, put_args);
-			RequestOptions get_options=new RequestOptions(ResponseMode.GET_ALL, timeout, true, null);
-			RequestOptions put_options=new RequestOptions(sync ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout, true, null);
-
+			RequestOptions get_options;
+			RequestOptions put_options;
+			if(warmUp){
+				get_options=new RequestOptions(ResponseMode.GET_ALL, timeout, true, null);
+				put_options=new RequestOptions(sync ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout, true, null);
+			}
+			else{
+				get_options=new RequestOptions(ResponseMode.GET_NONE, timeout, true, null);
+				put_options=new RequestOptions(ResponseMode.GET_NONE, timeout, true, null);
+				get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
+				put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
+			}
 			// Don't use bundling as we have sync requests (e.g. GETs) regardless of whether we set sync=true or false
-			get_options.setFlags(Message.Flag.DONT_BUNDLE);
-			put_options.setFlags(Message.Flag.DONT_BUNDLE);
+			//get_options.setFlags(Message.Flag.DONT_BUNDLE);
+			//put_options.setFlags(Message.Flag.DONT_BUNDLE);
 			//get_options.setFlags(Message.Flag.OOB);
 
 			if(oob) {
 				get_options.setFlags(Message.Flag.OOB);
 				put_options.setFlags(Message.Flag.OOB);
 			}
-			if(sync) {
-				get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
-				put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
-			}
+			//if(sync) {
+			//get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
+			//put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
+			//}
 			if(use_anycast_addrs) {
 				get_options.useAnycastAddresses(true);;
 				put_options.useAnycastAddresses(true);
@@ -693,7 +702,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 					}
 					try {
 						//System.out.println("WaitTime--->"+sendTime);
-						Thread.sleep(this.sendTime);
+						Thread.sleep(this.waitSSl);
 						//System.out.println("WaitTime--->"+sendTime);
 					} catch (InterruptedException e) {
 						//TODO Auto-generated catch block
@@ -770,7 +779,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			}
 			return anycast_targets;
 		}
-		
+
 		private Collection<Address> pickLocalTarget() {
 			Collection<Address> anycast_targets=new ArrayList<Address>(anycast_count);
 			anycast_targets.add(local_addr);

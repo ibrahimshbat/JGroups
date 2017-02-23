@@ -61,7 +61,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	protected final List<Address>  site_masters=new ArrayList<Address>();
 	private List<String> boxMembers  = new ArrayList<String>();
 	private List<Address> box = new ArrayList<Address>();
-	private int clusterSize = 7;
+	private int clusterSize = 5;
 	private AtomicLong localSequence = new AtomicLong();
 	private String outputDir;
 	private View view;
@@ -72,7 +72,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	private boolean warmUp = true;
 	private static Random rand = new Random();
 	private Credit credits = new Credit(0);
-	private final int thros=150;;
+	private final int thros=50;;
 	Invoker[] invokers;
 	//private Timer checkerRatioUpdated = new Timer();
 
@@ -401,15 +401,16 @@ public class ZabInfinispan extends ReceiverAdapter {
 			}
 		}
 		System.out.println("Received="+(c++));
-		synchronized (this) {
-			synchronized(credits){
-				if (credits.decAndGet()<thros){
-					credits.notifyAll();
-				}
+		//synchronized (this) {
+		synchronized(credits){
+			credits.decAndGet();
+			if (credits.getCounter()<thros){
+				credits.notifyAll();
 			}
-			//}
-			//	}
 		}
+		//}
+		//	}
+		//}
 	}
 	//Sender to send write RPC, for testing ording protocol 
 	private class Invoker extends Thread {
@@ -497,7 +498,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 					}
 					else {    // sync or async (based on value of 'sync') PUT
 						synchronized (credits) {
-							if(credits.incAndGet()>=thresh){
+							if(credits.getCounter()>=thresh){
 								credits.wait();
 							}
 							//else{
@@ -506,6 +507,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 							channel.send(sendMessage);
 							num_puts++;
 							System.out.println("Name--->"+this.getName()+" NumSent="+num_puts);
+							credits.incAndGet();
 							//}
 						}
 
