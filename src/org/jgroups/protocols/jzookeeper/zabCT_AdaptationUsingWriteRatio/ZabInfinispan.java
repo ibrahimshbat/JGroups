@@ -72,7 +72,8 @@ public class ZabInfinispan extends ReceiverAdapter {
 	private static Random rand = new Random();
 	private static int min = 0, max = 0;
 	private Timer checkerRatioUpdated = new Timer();
-
+	private int threadFinishedCount=0;
+	private boolean isInitiator=false;
 
 	// ============ configurable properties ==================
 	private boolean sync=true, oob=false, anycastRequests=true;
@@ -182,7 +183,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		channel.connect(channelName);
 		local_addr=channel.getAddress();
 		this.boxMembers = members;
-
+		this.isInitiator = (channel.getAddress().toString().contains(initiator))? true:false;
 		try {
 			MBeanServer server=Util.getMBeanServer();
 			JmxConfigurator.registerChannel(channel, server, "jgroups", channel.getClusterName(), true);
@@ -193,7 +194,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 
 		//if (box.size()>clusterSize)
 		//sendMyAddressToZab();
-		if (channel.getAddress().toString().contains(initiator)) {
+		if (isInitiator) {
 			System.out.println("I am initiator");
 			this.outFile = new PrintWriter(new BufferedWriter(new FileWriter(
 					outputDir + protocolName + "Test.log", true)));
@@ -309,7 +310,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		int total_gets=0, total_puts=0;
 		final AtomicInteger num_msgs_sent=new AtomicInteger(0);
 		final AtomicInteger checkWRatioUpdated=new AtomicInteger(0);
-		if (channel.getAddress().toString().contains(initiator)) {
+		if (isInitiator) {
 			checkerRatioUpdated.schedule(new ChekerWriteRatio(checkWRatioUpdated), 5, 1000);
 		}
 		List<Address> nonBoxMembers = new ArrayList<Address>(members);
@@ -594,6 +595,13 @@ public class ZabInfinispan extends ReceiverAdapter {
 			}
 		}
 	}
+	public synchronized void finished(){
+		threadFinishedCount++;
+		if(threadFinishedCount==num_threads && isInitiator){
+			sendCompleteNotify();
+			System.out.println("Send Finished message");
+		}
+	}
 	//Sender to send write RPC, for testing ording protocol 
 	private class Invoker extends Thread {
 		private final List<Address>  dests=new ArrayList<Address>();
@@ -645,16 +653,19 @@ public class ZabInfinispan extends ReceiverAdapter {
 			MethodCall put_call=new MethodCall(PUT, put_args);
 			RequestOptions get_options;
 			RequestOptions put_options;
-			if(warmUp){
-				get_options=new RequestOptions(ResponseMode.GET_ALL, timeout, true, null);
-				put_options=new RequestOptions(sync ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout, true, null);
-			}
-			else {
-				get_options=new RequestOptions(ResponseMode.GET_NONE, timeout, true, null);
-				put_options=new RequestOptions(ResponseMode.GET_NONE, timeout, true, null);
-				get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
-				put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
-			}
+			get_options=new RequestOptions(ResponseMode.GET_ALL, timeout, true, null);
+			put_options=new RequestOptions(sync ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout, true, null);
+			//Async mode
+			//			if(warmUp){
+			//				get_options=new RequestOptions(ResponseMode.GET_ALL, timeout, true, null);
+			//				put_options=new RequestOptions(sync ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout, true, null);
+			//			}
+			//			else {
+			//				get_options=new RequestOptions(ResponseMode.GET_NONE, timeout, true, null);
+			//				put_options=new RequestOptions(ResponseMode.GET_NONE, timeout, true, null);
+			//				get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
+			//				put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
+			//			}
 			// Don't use bundling as we have sync requests (e.g. GETs) regardless of whether we set sync=true or false
 			//get_options.setFlags(Message.Flag.DONT_BUNDLE);
 			//put_options.setFlags(Message.Flag.DONT_BUNDLE);
@@ -664,23 +675,25 @@ public class ZabInfinispan extends ReceiverAdapter {
 				get_options.setFlags(Message.Flag.OOB);
 				put_options.setFlags(Message.Flag.OOB);
 			}
-			//if(sync) {
-			//get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
-			//put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
-			//}
+			if(sync) {
+				get_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC, Message.Flag.OOB);
+				put_options.setFlags(Message.Flag.DONT_BUNDLE, Message.NO_FC);
+			}
 			if(use_anycast_addrs) {
 				get_options.useAnycastAddresses(true);;
 				put_options.useAnycastAddresses(true);
 			}
 			while(true) {
 				long i=num_msgs_sent.getAndIncrement();
-				if(i >= num_msgs_to_send){
-					System.out.println(" *********** Name "+this.getName() + " Finished=: " + i);;
-					//if(numClientsFinished.incrementAndGet()==num_threads)
-					break;
-				}
+
 				if (!warmUp){
-					if(i>= threshold && read_per>=0.0){
+					if(i >= (num_msgs_to_send-900)){
+						System.out.println(" *********** Name "+this.getName() + " Finished=: " + i);;
+						//if(numClientsFinished.incrementAndGet()==num_threads)
+						finished();
+						break;
+					}
+					if(i>= threshold && read_per>0.0){
 						threshold+=thresholdFixed;
 						changeReadRatio((read_per-0.1)); 
 						System.out.println("Write Ratio change to "+read_per+  " /threshold=" +threshold+" /i="+i);
@@ -692,6 +705,13 @@ public class ZabInfinispan extends ReceiverAdapter {
 					} catch (InterruptedException e) {
 						//TODO Auto-generated catch block
 						e.printStackTrace();
+					}
+				}
+				else{
+					if(i >= num_msgs_to_send){
+						System.out.println(" *********** Name "+this.getName() + " Finished Warm=: " + i);;
+						//if(numClientsFinished.incrementAndGet()==num_threads)
+						break;
 					}
 				}
 

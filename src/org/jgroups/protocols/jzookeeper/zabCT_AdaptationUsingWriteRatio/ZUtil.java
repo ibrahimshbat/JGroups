@@ -18,17 +18,12 @@ public class ZUtil {
 	}
 
 
-
 	public boolean SendAckOrNoSend(){
-
-
 		randomValue=random.nextDouble();
 		//TO check whether to send Ack or not
 		return randomValue <= p.get()? true : false;
 
 	}
-
-
 
 	public double getP() {
 		return p.get();

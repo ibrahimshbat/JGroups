@@ -66,11 +66,11 @@ public class ZabCoinTossing extends Protocol {
 	private final LinkedBlockingQueue<ZabCoinTossingHeader> delivery = new LinkedBlockingQueue<ZabCoinTossingHeader>();
 	private final LinkedBlockingQueue<Long> ackToProcess = new LinkedBlockingQueue<Long>();
 	private ConcurrentMap<Long, Proposal> outstandingProposals = new ConcurrentHashMap<Long, Proposal>();
-	private Map<Long, Long> tailProposal = Collections.synchronizedMap(new LinkedHashMap<Long, Long>());
+	//private Map<Long, Long> tailProposal = Collections.synchronizedMap(new LinkedHashMap<Long, Long>());
 	private LinkedHashMap<Long, Long> copyTailProposals = new LinkedHashMap<Long, Long>();
 	private final Map<Long, ZabCoinTossingHeader> queuedProposalMessage = Collections.synchronizedMap(new HashMap<Long, ZabCoinTossingHeader>());
 	private final Map<MessageId, Message> messageStore = Collections.synchronizedMap(new HashMap<MessageId, Message>());
-	//private ConcurrentMap<Long, Integer> followerACKs = new ConcurrentHashMap<Long, Integer>();
+	private ConcurrentMap<Long, Integer> followerACKs = new ConcurrentHashMap<Long, Integer>();
 
 	private TreeMap<Double, Double> pW = new TreeMap<Double, Double>();
 	protected volatile boolean                  running=true;
@@ -118,6 +118,7 @@ public class ZabCoinTossing extends Protocol {
 	private final int Zab= 1;
 	private double writeRatio= 1.0; //1.0 mean all requests are read
 	private int latencyIndex = 0;
+	private int perviousNumACK = 0;
 
 
 	//For count Acks in leader
@@ -273,10 +274,10 @@ public class ZabCoinTossing extends Protocol {
 				percentRW = Double.parseDouble(r);
 				//writeRatio=1-percentRW;
 				//if (percentRW==0.0){
-					//thshot+=1000000;
+				//thshot+=1000000;
 				//}
 				//else{
-					//thshot+=(1000000*percentRW);
+				//thshot+=(1000000*percentRW);
 				//}
 				//percentRW = (Double) msg.getObject();
 				numberOfSenderInEachClient = Integer.parseInt(info.split(":")[2]);
@@ -476,24 +477,25 @@ public class ZabCoinTossing extends Protocol {
 				//ackMessage.setFlag(Message.Flag.DONT_BUNDLE);
 				try{
 					for(Address addr:zabMembers){
-						if (local_addr.equals(addr))
+						if (local_addr.equals(addr)){
+							ackToProcess.add(zxidACK);
 							continue;
+						}
 						Message cpy = ackMessage.copy();
 						cpy.setDest(addr);
 						down_prot.down(new Event(Event.MSG, cpy));  
 						//stats.countAck.incrementAndGet();
 					}	
-					ackToProcess.add(zxidACK);
 				}catch(Exception ex) {
 					log.error("failed proposing message to members");
 				}    
 			}
-			else {
-				//log.info("get Tail--->"+zxidACK);
-				synchronized(tailProposal){
-					tailProposal.put(zxidACK, (System.currentTimeMillis()+tailTimeout.get()));
-				}
-			}
+			//else {
+			//log.info("get Tail--->"+zxidACK);
+			//synchronized(tailProposal){
+			//tailProposal.put(zxidACK, (System.currentTimeMillis()+tailTimeout.get()));
+			//}
+			//}
 			break;
 		}
 	}
@@ -505,36 +507,46 @@ public class ZabCoinTossing extends Protocol {
 		}
 		p = outstandingProposals.get(ackedzxid);
 		if (p == null) {  
-			//followerACKs.put(ackedzxid,1);
-			return;
+			if (followerACKs.containsKey(ackedzxid)){
+				followerACKs.put(ackedzxid,(followerACKs.get(ackedzxid)+1));
+				return;
+			}
+			else{
+				followerACKs.put(ackedzxid,1);
+				//  log.info("Proposal Not received yet Zxid="+ackedzxid);
+				return;
+			}
 		}
 		p.AckCount++;
-		//if (followerACKs.containsKey(ackedzxid)){
-		//followerACKs.remove(ackedzxid);
-		//}
+		if (followerACKs.containsKey(ackedzxid)){
+			perviousNumACK = followerACKs.remove(ackedzxid);
+			p.AckCount = p.AckCount + perviousNumACK;
+			//log.info("Added="+perviousNumACK+" For "+ackedzxid);
+		}
 		if (isQuorum(p.getAckCount())) {
 			if (ackedzxid == lastZxidCommitted+1){
-				synchronized(tailProposal){
-					if (tailProposal.containsKey(ackedzxid)){
-						tailProposal.remove(ackedzxid);
-					}
-				}
+				//				synchronized(tailProposal){
+				//					if (tailProposal.containsKey(ackedzxid)){
+				//						tailProposal.remove(ackedzxid);
+				//					}
+				//				}
 				outstandingProposals.remove(ackedzxid);	
 				delivery.add(new ZabCoinTossingHeader(ZabCoinTossingHeader.DELIVER, ackedzxid));
 				lastZxidCommitted = ackedzxid;
 			} else {
 				long zxidCommiting = lastZxidCommitted +1;
-				for (long z = zxidCommiting; z < ackedzxid+1; z++){
-					synchronized(tailProposal){
-						if (tailProposal.containsKey(z)){
-							tailProposal.remove(z);
-						}
-					}
-				}
+				//for (long z = zxidCommiting; z < ackedzxid+1; z++){
+				//					synchronized(tailProposal){
+				//						if (tailProposal.containsKey(z)){
+				//							tailProposal.remove(z);
+				//						}
+				//					}
+				//}
+				lastZxidCommitted = ackedzxid;			
 				for (long z = zxidCommiting; z < ackedzxid+1; z++){
 					outstandingProposals.remove(z);
 					delivery.add(new ZabCoinTossingHeader(ZabCoinTossingHeader.DELIVER, z));
-					lastZxidCommitted = z;			
+					//lastZxidCommitted = z;			
 					//log.info("processACK------------> Delivery Zxid--->"+z);
 
 				}
@@ -937,51 +949,51 @@ public class ZabCoinTossing extends Protocol {
 	}
 
 
-	class TailTimeOutTask extends TimerTask {
-		public TailTimeOutTask() {
-		}
-
-		public void run() {
-			ZabCoinTossingHeader hdrACK = null;
-			Message ackMessage = null;
-			if(!tailProposal.isEmpty()){
-				synchronized(tailProposal){
-					copyTailProposals= new LinkedHashMap<Long,Long>(tailProposal);
-				}
-				//stats.countTailTimeout.incrementAndGet();
-				//log.info("Tail size: "+tailProposal.size());
-				for (long zx:copyTailProposals.keySet()){
-					long diffTime = copyTailProposals.get(zx) - System.currentTimeMillis();
-					if (diffTime <= 0 ){//tail timeout elapses
-						log.info("Procssing ACK casuing by timeout====>: "+zx);
-						hdrACK = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACK, zx);
-						ackMessage = new Message(leader).putHeader(id, hdrACK);
-						down_prot.down(new Event(Event.MSG, ackMessage)); 
-						ackToProcess.add(zx);
-						log.info("Send Ack timeout  for zxid="+zx);
-						//log.info("count Tail timeout elapsed:="+stats.countTailTimeout.incrementAndGet());
-						//sendACKToFollower.add(zx);
-						synchronized(tailProposal){
-							tailProposal.remove(zx);
-						}
-					}
-					else{
-						timerForTail.cancel();
-						timerForTail = new Timer();
-						timerForTail.schedule(new TailTimeOutTask(), 0, diffTime);  							
-					}
-					break;
-				}
-				copyTailProposals.clear();
-			}
-
-
-
-		}
-
-
-
-	}
+	//	class TailTimeOutTask extends TimerTask {
+	//		public TailTimeOutTask() {
+	//		}
+	//
+	//		public void run() {
+	//			ZabCoinTossingHeader hdrACK = null;
+	//			Message ackMessage = null;
+	//			if(!tailProposal.isEmpty()){
+	//				synchronized(tailProposal){
+	//					copyTailProposals= new LinkedHashMap<Long,Long>(tailProposal);
+	//				}
+	//				//stats.countTailTimeout.incrementAndGet();
+	//				//log.info("Tail size: "+tailProposal.size());
+	//				for (long zx:copyTailProposals.keySet()){
+	//					long diffTime = copyTailProposals.get(zx) - System.currentTimeMillis();
+	//					if (diffTime <= 0 ){//tail timeout elapses
+	//						log.info("Procssing ACK casuing by timeout====>: "+zx);
+	//						hdrACK = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACK, zx);
+	//						ackMessage = new Message(leader).putHeader(id, hdrACK);
+	//						down_prot.down(new Event(Event.MSG, ackMessage)); 
+	//						ackToProcess.add(zx);
+	//						log.info("Send Ack timeout  for zxid="+zx);
+	//						//log.info("count Tail timeout elapsed:="+stats.countTailTimeout.incrementAndGet());
+	//						//sendACKToFollower.add(zx);
+	//						synchronized(tailProposal){
+	//							tailProposal.remove(zx);
+	//						}
+	//					}
+	//					else{
+	//						timerForTail.cancel();
+	//						timerForTail = new Timer();
+	//						timerForTail.schedule(new TailTimeOutTask(), 0, diffTime);  							
+	//					}
+	//					break;
+	//				}
+	//				copyTailProposals.clear();
+	//			}
+	//
+	//
+	//
+	//		}
+	//
+	//
+	//
+	//	}
 
 	class MeasuePropArrivalRate extends TimerTask {
 		private int lastNumProposal=0;
@@ -1011,7 +1023,6 @@ public class ZabCoinTossing extends Protocol {
 				dMuliPropArr = d*lastNumProposal;
 				//log.info("c2p2="+c2p2);
 				//log.info("dMuliPropArr="+dMuliPropArr);
-
 				for (double p: copypW.keySet()){
 					if (p>=c2p2 || copypW.get(p)>=dMuliPropArr){
 						removedp.add(p);
@@ -1025,24 +1036,18 @@ public class ZabCoinTossing extends Protocol {
 				if (!copypW.isEmpty()){
 					if (runingProtocol==ZabCT){
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
-						//log.info("p-->W=:"+copypW);
-						//log.info("New p id ------------->=:"+largeKey.getKey());
 						zUnit.setP(largeKey.getKey());
-						//log.info("p change to ---->"+zUnit.getP());
 						log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
 								" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=:"+largeKey.getKey());
 						stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+largeKey.getKey()+","+sec);
-						log.info("outstandingProposals="+outstandingProposals.size());
+						//log.info("outstandingProposals="+outstandingProposals.size());
 					}
 					else{
 						log.info("copypW is empty !!!!!");
 						log.info("Must Change to ZabCT   ********************************");
 						//setRuningProtocol(ZabCT);
 						final Entry<Double, Double> largeKey = copypW.lastEntry();
-						//log.info("p-->W=:"+copypW);
-						//log.info("New p id ------------->=:"+largeKey.getKey());
 						zUnit.setP(largeKey.getKey());
-						//log.info("p change to ---->"+zUnit.getP());
 					}
 				}
 				else{
@@ -1078,14 +1083,14 @@ public class ZabCoinTossing extends Protocol {
 					log.info("writeRatio="+writeRatio);
 					log.info("countNo0="+(++countNo0));
 					log.info("After send ACK lastZxidCommitted="+lastZxidCommitted);
-					
+
 				}*/
 			}
-		/*This tests how many we have arrival rate=0 when we run ZanCT with n=7
-		 * And we we send ACK to all, yes, it solves the block issue but latency 
-		 * becomes higer. 
-		 * */
-		 /* else{
+			/*This tests how many we have arrival rate=0 when we run ZanCT with n=7
+			 * And we we send ACK to all, yes, it solves the block issue but latency 
+			 * becomes higer. 
+			 * */
+			/* else{
 				long zxidACK = lastZxidCommitted+1;
 				ZabCoinTossingHeader hdrACKCT = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACKZAB, zxidACK);
 				Message ackMessage = new Message().putHeader(id, hdrACKCT);
@@ -1105,48 +1110,48 @@ public class ZabCoinTossing extends Protocol {
 				} 
 				log.info("count0="+(++count0));
 			}
-			*/
+			 */
 
-		//log.info("ArrivalRate=:"+lastNumProposal);
-		//log.info("p="+zUnit.getP());
-		stats.lastNumProposal.set(stats.numProposal.get());
-	}
-	public double findCondtion2Part2(int numProposalPerec){
-		double c2p2=0.0;
-		c2p2 = (((double) theta/n) * ((double) 1/numProposalPerec));
-		return c2p2;
-	}
-
-}
-
-class Ack extends TimerTask {
-
-	public Ack() {
+			//log.info("ArrivalRate=:"+lastNumProposal);
+			//log.info("p="+zUnit.getP());
+			stats.lastNumProposal.set(stats.numProposal.get());
+		}
+		public double findCondtion2Part2(int numProposalPerec){
+			double c2p2=0.0;
+			c2p2 = (((double) theta/n) * ((double) 1/numProposalPerec));
+			return c2p2;
+		}
 
 	}
 
-	private long startTime = 0;
-	private long currentTime = 0;
-	private double currentAck = 0;
-	private int CurrentNumAcks = 0;
+	class Ack extends TimerTask {
 
-	@Override
-	public void run() {
-		startTime = stats.getLastAcktTime();
-		currentTime = System.currentTimeMillis();
-		CurrentNumAcks=stats.countAckMessage.get();
-		currentAck = (((double)CurrentNumAcks - stats
-				.getLastNumAcks()) / ((double)(currentTime - startTime)/1000.0));
-		stats.setLastNumAcks(CurrentNumAcks);
-		stats.setLastAckTime(currentTime);
-		stats.addAck(currentAck);
-	}
+		public Ack() {
 
-	public String convertLongToTimeFormat(long time) {
-		Date date = new Date(time);
-		SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
-		return longToTime.format(date);
+		}
+
+		private long startTime = 0;
+		private long currentTime = 0;
+		private double currentAck = 0;
+		private int CurrentNumAcks = 0;
+
+		@Override
+		public void run() {
+			startTime = stats.getLastAcktTime();
+			currentTime = System.currentTimeMillis();
+			CurrentNumAcks=stats.countAckMessage.get();
+			currentAck = (((double)CurrentNumAcks - stats
+					.getLastNumAcks()) / ((double)(currentTime - startTime)/1000.0));
+			stats.setLastNumAcks(CurrentNumAcks);
+			stats.setLastAckTime(currentTime);
+			stats.addAck(currentAck);
+		}
+
+		public String convertLongToTimeFormat(long time) {
+			Date date = new Date(time);
+			SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
+			return longToTime.format(date);
+		}
 	}
-}
 
 }
