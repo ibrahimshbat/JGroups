@@ -473,7 +473,7 @@ public class ProtocolStats {
 	public void setStartTimeRatio(long start) {
 		this.startTimeRatio=start;
 	}
-	
+
 	public void printProtocolStats(int deliveredRequest, int cliuterSize, int perRW, boolean is_leader) {
 
 		double avgAllD = 0, avgRead=0, allRWAvg=0, throughputRate =0, tempSumThr=0, per50th=0, per90th=0, 
@@ -496,17 +496,18 @@ public class ProtocolStats {
 		//outFile.println("Throughput Rate average: " + throughputRate);
 
 		if(latencies.size()!=0){
-			avgAllD = average(latencies);
+			List<Long> copyLatencies= new ArrayList<Long>(latencies);
+			avgAllD = average(copyLatencies);
 			avgAllD = (avgAllD) / 1000000.0;
 			outFile.println("Write Latencies Size: " + latencies.size());
-			outFile.println("Write Latency: [Min= " + ((double) (min(latencies))/1000000.0) + " Avg= " +
-					avgAllD  + " Max= " +((double) (max(latencies))/1000000.0)+"]");
-			CI95= computeCI(latencies, avgAllD);
+			outFile.println("Write Latency: [Min= " + ((double) (min(copyLatencies))/1000000.0) + " Avg= " +
+					avgAllD  + " Max= " +((double) (max(copyLatencies))/1000000.0)+"]");
+			CI95= computeCI(copyLatencies, avgAllD);
 			outFile.println("Write Latency 95% confidence interval: "+CI95);
-			per50th = percentile50th(latencies);
-			per90th = percentile90th(latencies);
-			per95th = percentile95th(latencies);
-			per99th = percentile99th(latencies);
+			per50th = percentile50th(copyLatencies);
+			per90th = percentile90th(copyLatencies);
+			per95th = percentile95th(copyLatencies);
+			per99th = percentile99th(copyLatencies);
 			outFile.println("Write Latency Median: "+per50th);
 			outFile.println("Write Latency 90th percentile: "+per90th);
 			outFile.println("Write Latency 95th percentile: "+per95th);
@@ -517,8 +518,8 @@ public class ProtocolStats {
 			avgRead = average(readLatencies);
 			avgRead = (avgRead) / 1000000.0;
 			outFile.println("Read Latencies Size: " + readLatencies.size());
-			outFile.println("Read Latency: [Min= " + ((double) (min(readLatencies))/1000000.0) + " Avg= " +
-					avgRead  + " Max= " +((double) (max(readLatencies))/1000000.0)+"]");
+			//outFile.println("Read Latency: [Min= " + ((double) (min(readLatencies))/1000000.0) + " Avg= " +
+					//avgRead  + " Max= " +((double) (max(readLatencies))/1000000.0)+"]");
 			CI95= computeCI(readLatencies,avgRead);
 			outFile.println("Read Latency 95% confidence interval: "+CI95);
 			per50th = percentile50th(readLatencies);
@@ -530,9 +531,10 @@ public class ProtocolStats {
 			outFile.println("Read Latency 95th percentile: "+per95th);
 			outFile.println("Read Latency 99th percentile: "+per99th);
 		}
-
+		List<String> s = new ArrayList<String>();
 		List<Long> RWLatencies = new ArrayList<Long>();
-		RWLatencies.addAll(latencies);
+		List<Long> copyLatencies1= new ArrayList<Long>(latencies);
+		RWLatencies.addAll(copyLatencies1);
 		RWLatencies.addAll(readLatencies);
 		outFile.println("Read/Write Latencies Size: " + RWLatencies.size());				
 		allRWAvg = average(RWLatencies);
@@ -554,10 +556,12 @@ public class ProtocolStats {
 		double avLate=0.0;
 		//List<Integer> numOfProposalPerRatio = new ArrayList<Integer>();
 		int incrementRatio=10;
+		List<Long> copyLatencies2= new ArrayList<Long>(latencies);
+
 		for (int i=0;i<(latencyPointByZxidPerRatio.size()-1);i++){
 			//if (i != (latencyPointByZxidPerRatio.size()-1)){
 			//outFile.print("[start="+latencyPerRatio.get(i)+"End="+latencyPerRatio.get(i+1)+"] ");
-			avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
+			avLate = averageFromTo(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), copyLatencies2);
 			avLate =avLate / 1000000.0;
 			outFile.print(" "+incrementRatio+"%="+avLate);
 			incrementRatio+=10;
@@ -573,6 +577,46 @@ public class ProtocolStats {
 			//			}
 
 		}
+		
+		String avgMean=null;
+		String p90=null;
+		String p95=null;
+		String p99=null;
+		List<String> avgMeanList = new ArrayList<String>();
+		List<String> p90List = new ArrayList<String>();
+		List<String> p95List = new ArrayList<String>();
+		List<String> p99List = new ArrayList<String>();
+		for (int i=0;i<10;i++){
+			avgMean = averageTwo( latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
+			avgMeanList.add(avgMean);
+			p90 =  p90Two(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
+			p90List.add(p90);
+			p95 =  p95Two(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
+			p95List.add(p95);
+			p99 =  p99Two(latencyPointByZxidPerRatio.get(i), latencyPointByZxidPerRatio.get(i+1), latencies);
+			p99List.add(p99);
+
+		}
+			outFile.println();
+			outFile.print("Latencies (Mean) per W%:");
+			for (int j = 0; j < avgMeanList.size(); j++) {
+				outFile.print(" " +avgMeanList.get(j));
+			}
+			outFile.println();
+			outFile.print("Latencies (90th) per W%:");
+			for (int j = 0; j < p90List.size(); j++) {
+				outFile.print(" " +p90List.get(j));
+			}
+			outFile.println();
+			outFile.print("Latencies (95th) per W%:");
+			for (int j = 0; j < p95List.size(); j++) {
+				outFile.print(" " +p95List.get(j));
+			}
+			outFile.println();
+			outFile.print("Latencies (99th) per W%:");
+			for (int j = 0; j < p99List.size(); j++) {
+				outFile.print(" " +p99List.get(j));
+			}
 
 		outFile.println();
 
@@ -589,15 +633,16 @@ public class ProtocolStats {
 		int ind=1;
 		//latencyPointByZxidPerRatio.add((long) (latencies.size()-1));
 		System.out.println("Change Ratio to: "+incrementRatio+ " Frist zxid="+latencyPointByZxidPerRatio.get(ind));
-		for(int i=0; i<latencies.size();i++){
-			writeLat.println( (((double) latencies.get(i))/1000000)+","+incrementRatio);
+		List<Long> copyLatencies3= new ArrayList<Long>(latencies);
+		for(int i=0; i<copyLatencies3.size();i++){
+			writeLat.println( (((double) copyLatencies3.get(i))/1000000)+","+incrementRatio);
 			if(ind!=11 &&  i == latencyPointByZxidPerRatio.get(ind) ){
 				incrementRatio+=10;
 				++ind;
 				//System.out.println("Change Ratio to: "+incrementRatio+ " i="+i+" New zxid="+latencyPointByZxidPerRatio.get(ind));
 			}
 		}
-		outFile.println("Zxid Index: "+latencyPointByZxidPerRatio);
+		//outFile.println("Zxid Index: "+latencyPointByZxidPerRatio);
 
 		for(long lat:readLatencies)
 			readLat.println((double) (((double) lat)/1000000));
@@ -608,29 +653,29 @@ public class ProtocolStats {
 		outFile.println("Proposals per Ratio: "+numProposalPerRatio);
 		//For count ACKS in leader
 		if(is_leader){
-			double sumAcks=0.0;
-			for (double ack:acks){
-				sumAcks+=ack;
-			}
-			sumAcks = sumAcks/acks.size();
-			outFile.println("Ack Size: " + acks.size());
-			outFile.println("Ack Rates: " + acks);
-			outFile.println("Ack Rate average: " + sumAcks);
+			//			double sumAcks=0.0;
+			//			for (double ack:acks){
+			//				sumAcks+=ack;
+			//			}
+			//			sumAcks = sumAcks/acks.size();
+			//			outFile.println("Ack Size: " + acks.size());
+			//			outFile.println("Ack Rates: " + acks);
+			//			outFile.println("Ack Rate average: " + sumAcks);
 
 			int sumAcksPerRatio=0;
 			for (int ack:acksPerRatio){
 				sumAcksPerRatio+=ack;
 			}
 			sumAcksPerRatio = sumAcksPerRatio/acksPerRatio.size();
-			outFile.println("Ack per Write Ratio Size: " + acksPerRatio.size());
+			//outFile.println("Ack per Write Ratio Size: " + acksPerRatio.size());
 			outFile.println("Ack per Write Ratio Rates: " + acksPerRatio);
-			outFile.println("Ack per Write Ratio Rate average: " + sumAcksPerRatio);
+			//outFile.println("Ack per Write Ratio Rate average: " + sumAcksPerRatio);
 		}
 
-	
+
 		outFile.println("Throughput per Write Ratio: " + throughputPerRatio);
 		outFile.println("Duration per Write Ratio: " + durtionPerRatio);
-		
+
 		outFile.print("Throughput VS Time (sec) Took per W%:");
 		incrementRatio=10;
 		for (int i=0;i<throughputPerRatio.size();i++){
@@ -727,12 +772,95 @@ public class ProtocolStats {
 		outFileToWork.println("(>1000), " + xLager1000);    
 
 	}
+	
+	public String averageTwo(int s, int e, List<Long> allLatency){
+		String r=null;
+		double avg=0.0;
+		double sum=0;
+		List<Double> latency = convertToDouble(allLatency.subList(s, (e+1)));
+		//For Frist half
+		int size = (latency.size()/2);
+		for (int i=0;i<size;i++) {
+			sum += latency.get(i);
+		}
+		avg = (double) sum / size;
+		r=String.valueOf(avg)+"-";
+		//For Second half
+		sum=0;
+		avg=0.0;
+		for (int i=size;i<latency.size();i++) {
+			sum += latency.get(i);
+		}
+		avg = (double) sum / size;
+		r+=String.valueOf(avg);
+
+		return r;
+
+	}
+	public List<Double> convertToDouble(List<Long> allLatency){
+		List<Long> latenciesInLong = new ArrayList<Long>(allLatency);
+		List<Double> latenciesInDouble = new ArrayList<Double>();
+		for (int i = 0; i < latenciesInLong.size(); i++) {
+			latenciesInDouble.add((double) (((double) latenciesInLong.get(i))/1000000));
+		}
+		return latenciesInDouble;
+	}
+
+
+	public String p90Two(int s, int e, List<Long> allLatency){
+		String r = null;
+		List<Double> latencies = convertToDouble(allLatency.subList(s, (e+1)));
+		int midPoint = (latencies.size()/2);
+		List<Double> latency1= latencies.subList(0, midPoint);
+		List<Double> latency2= latencies.subList(midPoint, (latencies.size()));
+		Collections.sort(latency1);
+		Collections.sort(latency2);
+		int p90_indexList_1=(int)(latency1.size()*0.90)-1;
+		int p90_indexList_2=(int)(latency2.size()*0.90)-1;
+		r = String.valueOf(latency1.get(p90_indexList_1))+"-";;
+		r+= String.valueOf(latency2.get(p90_indexList_2));
+		return r;
+	}
+
+	public String p95Two(int s, int e, List<Long> allLatency){
+
+		String r = null;
+		List<Double> latencies = convertToDouble(allLatency.subList(s, (e+1)));
+		int midPoint = (latencies.size()/2);
+		List<Double> latency1= latencies.subList(0, midPoint);
+		List<Double> latency2= latencies.subList(midPoint, (latencies.size()));
+		Collections.sort(latency1);
+		Collections.sort(latency2);
+		int p90_indexList_1=(int)(latency1.size()*0.95)-1;
+		int p90_indexList_2=(int)(latency2.size()*0.95)-1;
+		r = String.valueOf(latency1.get(p90_indexList_1))+"-";;
+		r+= String.valueOf(latency2.get(p90_indexList_2));
+		return r;
+
+	}
+	public String p99Two(int s, int e, List<Long> allLatency){
+
+		String r = null;
+		List<Double> latencies = convertToDouble(allLatency.subList(s, (e+1)));
+		int midPoint = (latencies.size()/2);
+		List<Double> latency1= latencies.subList(0, midPoint);
+		List<Double> latency2= latencies.subList(midPoint, (latencies.size()));
+		Collections.sort(latency1);
+		Collections.sort(latency2);
+		int p90_indexList_1=(int)(latency1.size()*0.99)-1;
+		int p90_indexList_2=(int)(latency2.size()*0.99)-1;
+		r = (String.valueOf(latency1.get(p90_indexList_1)))+"-";
+		r+= String.valueOf(latency2.get(p90_indexList_2));
+		return r;
+
+	}
 
 	public double average(List<Long> data) {
+		Iterator<Long> it = data.iterator();
 		double sum=0;
 		double avg = 0;
-		for (Long lat : data) {
-			sum += lat;
+		while (it.hasNext()) {
+			sum += it.next();
 		}
 		avg = (double) sum / data.size();
 		return avg;
@@ -877,9 +1005,10 @@ public class ProtocolStats {
 
 	public long max(List<Long> data){
 		long max = Long.MIN_VALUE;
-		for (long lat : data) {
-			if (lat > max) {
-				max = lat;
+		Iterator<Long> it = data.iterator();
+		while (it.hasNext()) {
+			if (it.next() > max) {
+				max = it.next();
 			}
 		}
 		return max;
@@ -887,9 +1016,10 @@ public class ProtocolStats {
 
 	public long min(List<Long> data){
 		long min = Long.MAX_VALUE;
-		for (long lat : data) {
-			if (lat < min) {
-				min = lat;
+		Iterator<Long> it = data.iterator();
+		while (it.hasNext()) {
+			if (it.next() > min) {
+				min = it.next();
 			}
 		}
 		return min;

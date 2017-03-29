@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jgroups.Address;
@@ -70,25 +71,18 @@ public class Zab extends Protocol {
 	private ProtocolStats stats = new ProtocolStats();
 	@Property(name = "Zab_size", description = "It is Zab cluster size")
 	private Timer timer = new Timer();
-	private int clusterSize = 7;
+	private int clusterSize = 3;
 	private static int warmUp = 0;
 
 	//private Timer checkFinished = new Timer();	
 	private static int numReadCoundRecieved=0;
 	private double writeRatio= 0;
 	private int latencyIndex = 0;
+	private  AtomicInteger  numClientFinised=new AtomicInteger(0);
 
 	//For count Acks in leader
-	private Timer timerAck = new Timer();
-	private Address noSendAck1=null;
-	private Address noSendAck2=null;
-
-
-
-
-
-
-
+	//private Timer timerAck = new Timer();
+	//private final AtomicInteger outstandingRequests=new AtomicInteger(0);
 
 
 	/*
@@ -141,8 +135,24 @@ public class Zab extends Protocol {
 		messageStore.clear();
 		//startThroughput = false;
 		warmUp = queuedCommitMessage.size();
+		//outstandingRequests.set(0);
 		//executorDelivery.shutdown();
 		log.info("Reset done"+" Time="+System.currentTimeMillis());
+		if(is_leader){
+			log.info("I am Leader");
+			ZabHeader hdrReq = new ZabHeader(ZabHeader.STARTWORKLOAD);
+			//Added
+			Message startedMessage = new Message().putHeader((short) 78, hdrReq);
+			startedMessage.setFlag(Message.Flag.DONT_BUNDLE);
+			for(Address client: view.getMembers()){
+				if(zabMembers.contains(client))
+					continue;
+				startedMessage.setDest(client);
+				log.info("Sending to ---> "+client);
+				down_prot.down(new Event(Event.MSG, startedMessage));  
+			}
+			//Added Finished
+		}
 
 	}
 
@@ -182,6 +192,8 @@ public class Zab extends Protocol {
 				break;
 			case ZabHeader.REQUESTR:
 				//log.info(">>>>>>>>>>>>>>>>>Receive read<<<<<<<<<<<<<<<<<<<");
+				//outstandingRequests.incrementAndGet();
+
 				hdr.getMessageOrderInfo().getId().setStartTime(System.nanoTime());
 				readData(hdr.getMessageOrderInfo());
 				break;
@@ -198,13 +210,6 @@ public class Zab extends Protocol {
 				processACK(msg);
 				break;
 			case ZabHeader.COMMIT:
-				//				synchronized (notDeliverable) {
-				//					if(!queuedProposalMessage.containsKey(hdr.getZxid())){
-				//						notDeliverable.add(hdr.getZxid());
-				//						log.info("Store Zxid----> "+hdr.getZxid()+" Time="+System.currentTimeMillis());
-				//					}
-				//				}
-
 				delivery.add(hdr.getMessageOrderInfo());
 				break;
 			case ZabHeader.STARTWORKLOAD:
@@ -218,9 +223,8 @@ public class Zab extends Protocol {
 				stats.setLastThroughputTime(System.currentTimeMillis());
 				//timer.schedule(new Throughput(), 1000, 1000);
 				this.stats.addLatencyPointByZxidPerRatio(0);
-				if(is_leader)
-					timerAck.schedule(new Ack(), 1000, 1000);
-
+				//				if(is_leader)
+				//					timerAck.schedule(new Ack(), 1000, 1000);
 				reset();
 				break;
 			case ZabHeader.RWCHANGE:
@@ -239,31 +243,27 @@ public class Zab extends Protocol {
 				long ratioTime =now-stats.getStartTimeRatio();
 				stats.addDurtionPerRatio(TimeUnit.MILLISECONDS.toSeconds(ratioTime));
 				stats.setStartTimeRatio(now);
-				//long now = System.currentTimeMillis();
-				//long RatioTime =now-stats.getStartTimeRatio();
-				//stats.addDurtionPerRatio(TimeUnit.MILLISECONDS.toSeconds(RatioTime));
-				//stats.setStartTimeRatio(now);
 				break;
 			case ZabHeader.COUNTMESSAGE:
 				addCountReadToTotal(hdr);
 				break;
 			case ZabHeader.FINISHED:
 				log.info("I Have notfied from Client----> "+msg.getSrc());
-				this.stats.addNumProposalPerRatio(stats.numProposal.get()-stats.lastNumProposalRatio.get());
-				stats.addAcksPerRatio(stats.countAckPerWRatio.get());
-				stats.countAckPerWRatio.set(0);
-				this.stats.addLatencyPointByZxidPerRatio(latencyIndex);
-				stats.addThroughputPerRatio((stats.getnumReqDelivered()-stats.perviousthroughputPerRatio.get()));
-				long noww = System.currentTimeMillis();
-				long ratioTimee =noww-stats.getStartTimeRatio();
-				stats.addDurtionPerRatio(TimeUnit.MILLISECONDS.toSeconds(ratioTimee));
-				//if (clientFinished.incrementAndGet() == 10) {
-				running = false;
-				timer.cancel();
-				sendCountRead();
+				if(numClientFinised.incrementAndGet()==10){
+					this.stats.addNumProposalPerRatio(stats.numProposal.get()-stats.lastNumProposalRatio.get());
+					stats.addAcksPerRatio(stats.countAckPerWRatio.get());
+					stats.countAckPerWRatio.set(0);
+					this.stats.addLatencyPointByZxidPerRatio(latencyIndex);
+					stats.addThroughputPerRatio((stats.getnumReqDelivered()-stats.perviousthroughputPerRatio.get()));
+					long noww = System.currentTimeMillis();
+					long ratioTimee =noww-stats.getStartTimeRatio();
+					stats.addDurtionPerRatio(TimeUnit.MILLISECONDS.toSeconds(ratioTimee));
+					running = false;
+					timer.cancel();
+					sendCountRead();
 
-				log.info("Printing stats");
-				//}
+					log.info("Printing stats");
+				}
 				break;
 			}
 			//s
@@ -293,8 +293,6 @@ public class Zab extends Protocol {
 				zabMembers.add(mbrs.get(i));
 			}
 			leader = mbrs.get(2);
-			noSendAck1=mbrs.get(5);
-			noSendAck2=mbrs.get(6);
 			if (leader.equals(local_addr)) {
 				is_leader = true;
 			}
@@ -368,39 +366,16 @@ public class Zab extends Protocol {
 	private synchronized void sendACK(Message msg, ZabHeader hdrAck) {
 		MessageOrderInfo messageOrderInfo = hdrAck.getMessageOrderInfo();
 		long proZxid = messageOrderInfo.getOrdering();
-		//log.info("Recieved Proposal Zxid= "+proZxid);
 		queuedProposalMessage.put(proZxid, hdrAck);
-		//		if(waitingToDeliver.contains(messageOrderInfo.getOrdering())){
-		//			deliver(messageOrderInfo.getOrdering());
-		//			waitingToDeliver.remove(messageOrderInfo.getOrdering());
-		//			synchronized (delivery) {
-		//				delivery.notify();
-		//			}
-		//		}
-		//		synchronized (delivery) {
-		//			//log.info("Before Notifying for Zxid= "+proZxid+" Time="+System.currentTimeMillis());
-		//			synchronized (notDeliverable) {
-		//				if(notDeliverable.contains(proZxid)){
-		//					notDeliverable.remove(proZxid);
-		//					delivery.notify();
-		//					log.info("Notifying for Zxid= "+proZxid);
-		//				}
-		//			}
-		//		}
-		
+		ZabHeader hdrACK = new ZabHeader(ZabHeader.ACK, proZxid);
+		Message ACKMessage = new Message(leader).putHeader(this.id, hdrACK);
+		//ACKMessage.setFlag(Message.Flag.DONT_BUNDLE);
 
-		//if(!noSendAck1.equals(local_addr) && !noSendAck2.equals(local_addr)){
-			ZabHeader hdrACK = new ZabHeader(ZabHeader.ACK, proZxid);
-			Message ACKMessage = new Message(leader).putHeader(this.id, hdrACK);
-			//.setFlag(Message.Flag.DONT_BUNDLE);
-			//ACKMessage.setFlag(Message.Flag.DONT_BUNDLE);
-
-			try {
-				down_prot.down(new Event(Event.MSG, ACKMessage));
-			} catch (Exception ex) {
-				log.error("failed sending ACK message to Leader");
-			}
-		//}
+		try {
+			down_prot.down(new Event(Event.MSG, ACKMessage));
+		} catch (Exception ex) {
+			log.error("failed sending ACK message to Leader");
+		}
 
 	}
 
@@ -421,8 +396,7 @@ public class Zab extends Protocol {
 		p.AckCount++;
 		if (isQuorum(p.getAckCount())) {
 			outstandingProposals.remove(ackZxid);
-			commit(ackZxid);
-			//} 
+			commit(ackZxid); 
 		}
 
 	}
@@ -431,17 +405,10 @@ public class Zab extends Protocol {
 	 * This method is invoked by leader. It sends COMMIT message to all follower and itself.
 	 */
 	private void commit(long zxidd) {
-		//if (zxidd != lastZxidCommitted + 1) {
-		//if (log.isDebugEnabled()){
-		//log.debug("delivering Zxid out of order "+zxidd + " should be "
-		//+ lastZxidCommitted + 1);
-		//}
-		//}
 		ZabHeader hdrCommit = new ZabHeader(ZabHeader.COMMIT, zxidd);
 		Message commitMessage = new Message().putHeader(this.id, hdrCommit);
 		//.setFlag(Message.Flag.DONT_BUNDLE);;
 		ZabHeader hdrOrginal = queuedProposalMessage.get(zxidd);
-		//log.info("hdrOrginal zxid = " + hdrOrginal.getZxid());
 		MessageOrderInfo messageOrderInfo = hdrOrginal.getMessageOrderInfo();
 		hdrCommit.setMessageOrderInfo(messageOrderInfo);
 		for (Address address : zabMembers) {
@@ -460,19 +427,14 @@ public class Zab extends Protocol {
 	 * replay to the client.
 	 */
 	private void deliver(MessageOrderInfo info) {
-		//MessageOrderInfo messageOrderInfo = null;
 		long ddZxid = info.getOrdering();
 		ZabHeader hdrOrginal = queuedProposalMessage.remove(ddZxid);
-		//log.info("hdrOrginal zxid = " + hdrOrginal.getZxid());
-		//if(hdrOrginal!=null){
-		//messageOrderInfo = hdrOrginal.getMessageOrderInfo();
-		//}
-		queuedCommitMessage.put(ddZxid, hdrOrginal);
+		synchronized(queuedCommitMessage){
+			queuedCommitMessage.put(ddZxid, hdrOrginal);
+		}
 		stats.incnumReqDelivered();
 		stats.setEndThroughputTime(System.currentTimeMillis());
-		//log.info("Zxid=:"+dZxid+" Time="+System.currentTimeMillis());
-		//log.info("Zxid=:"+dZxid);
-		log.info("Zxid=:"+ddZxid);
+		//log.info("Zxid=:"+ddZxid);
 		if (requestQueue.contains(info.getId())) {
 			long startTime = info.getId().getStartTime();
 			long endTime = System.nanoTime();
@@ -481,34 +443,26 @@ public class Zab extends Protocol {
 			requestQueue.remove((info.getId()));
 			latencyIndex=stats.getLatencyIndex();
 		}
-		//synchronized (this) {
 		lastZxidCommitted = ddZxid;
-		//}
-		//return true;
 	}
 
 	private synchronized void readData(MessageOrderInfo messageInfo){
-		//log.info(" readData ");
-
 		Message readReplay = null;
-		CSInteractionHeader hdrResponse = null;
 		ZabHeader hdrOrginal = null;
-		//synchronized(queuedCommitMessage){
-		hdrOrginal = queuedCommitMessage.get(messageInfo.getOrdering());
-		//}
+		synchronized(queuedCommitMessage){
+			hdrOrginal = queuedCommitMessage.get(messageInfo.getOrdering());
+		}
 
 		if (hdrOrginal != null){
-			//log.info(" Find data==== "+hdrOrginal.getMessageOrderInfo().getOrdering());
-
-			hdrResponse = new CSInteractionHeader(CSInteractionHeader.RESPONSER, 
-					messageInfo);
-			readReplay = new Message(messageInfo.getId().getOriginator()).putHeader((short) 79, hdrResponse);
+			hdrOrginal.setType(ZabHeader.RESPONSER);
+			hdrOrginal.setMessageOrderInfo(messageInfo);
 		}
 		else{//Simulate return null if the requested data is not stored in Zab
-			log.info(" Read null%%%%");
-			hdrResponse = new CSInteractionHeader(CSInteractionHeader.RESPONSER, messageInfo);
-			readReplay = new Message(messageInfo.getId().getOriginator()).putHeader((short) 79, hdrResponse);
+			//log.info(" Read null%%%%");
+			hdrOrginal = new ZabHeader(ZabHeader.RESPONSER, messageInfo);
+			//readReplay = new Message(messageInfo.getId().getOriginator()).putHeader((short) 79, hdrResponse);
 		}
+		readReplay = new Message(messageInfo.getId().getOriginator()).putHeader(this.id, hdrOrginal);
 		long startTime = messageInfo.getId().getStartTime();
 		long endTime = System.nanoTime();
 		stats.addReadLatency((endTime - startTime));
@@ -516,16 +470,21 @@ public class Zab extends Protocol {
 		readReplay.setBuffer(new byte[1000]);
 		stats.incnumReqDelivered();
 		stats.setEndThroughputTime(System.currentTimeMillis());
-		//readReplay.setFlag(Message.Flag.DONT_BUNDLE);
+		readReplay.setFlag(Message.Flag.DONT_BUNDLE);
 		down_prot.down(new Event(Event.MSG, readReplay));
 	}
 
 	private void sendOrderResponse(MessageOrderInfo messageOrderInfo){
-		CSInteractionHeader hdrResponse = new CSInteractionHeader(CSInteractionHeader.RESPONSEW, messageOrderInfo);
-		Message msgResponse = new Message(messageOrderInfo.getId()
-				.getOriginator()).putHeader((short) 79, hdrResponse);
-		//msgResponse.setFlag(Message.Flag.DONT_BUNDLE);
+
+		ZabHeader hdr = new ZabHeader(ZabHeader.RESPONSEW, messageOrderInfo);
+		Message msgResponse = new Message(messageOrderInfo.getId().getOriginator()).putHeader(this.id, hdr);
 		down_prot.down(new Event(Event.MSG, msgResponse));
+		
+//		CSInteractionHeader hdrResponse = new CSInteractionHeader(CSInteractionHeader.RESPONSEW, messageOrderInfo);
+//		Message msgResponse = new Message(messageOrderInfo.getId()
+//				.getOriginator()).putHeader((short) 79, hdrResponse);
+//		msgResponse.setFlag(Message.Flag.DONT_BUNDLE);
+//		down_prot.down(new Event(Event.MSG, msgResponse));
 	}
 
 
@@ -642,9 +601,6 @@ public class Zab extends Protocol {
 		}
 		private void deliverMessages() {
 			MessageOrderInfo info = null;
-			//ArrayList<Long> tempZxid = new ArrayList<Long>();
-			boolean isDelivered= false;
-			//log.info("Before While");
 			while(true){
 				try {
 					info= delivery.take();
@@ -658,65 +614,65 @@ public class Zab extends Protocol {
 	}
 
 
-	class Throughput extends TimerTask {
+//	class Throughput extends TimerTask {
+//
+//		public Throughput() {
+//
+//		}
+//
+//		private long startTime = 0;
+//		private long currentTime = 0;
+//		private double currentThroughput = 0;
+//		private int finishedThroughput = 0;
+//
+//		@Override
+//		public void run() {
+//			startTime = stats.getLastThroughputTime();
+//			currentTime = System.currentTimeMillis();
+//			finishedThroughput=stats.getnumReqDelivered();
+//			currentThroughput = (((double)finishedThroughput - stats
+//					.getLastNumReqDeliveredBefore()) / ((double)(currentTime - startTime)/1000.0));
+//			stats.setLastNumReqDeliveredBefore(finishedThroughput);
+//			stats.setLastThroughputTime(currentTime);
+//			stats.addThroughput(currentThroughput);
+//		}
+//
+//		public String convertLongToTimeFormat(long time) {
+//			Date date = new Date(time);
+//			SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
+//			return longToTime.format(date);
+//		}
+//	}
 
-		public Throughput() {
-
-		}
-
-		private long startTime = 0;
-		private long currentTime = 0;
-		private double currentThroughput = 0;
-		private int finishedThroughput = 0;
-
-		@Override
-		public void run() {
-			startTime = stats.getLastThroughputTime();
-			currentTime = System.currentTimeMillis();
-			finishedThroughput=stats.getnumReqDelivered();
-			currentThroughput = (((double)finishedThroughput - stats
-					.getLastNumReqDeliveredBefore()) / ((double)(currentTime - startTime)/1000.0));
-			stats.setLastNumReqDeliveredBefore(finishedThroughput);
-			stats.setLastThroughputTime(currentTime);
-			stats.addThroughput(currentThroughput);
-		}
-
-		public String convertLongToTimeFormat(long time) {
-			Date date = new Date(time);
-			SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
-			return longToTime.format(date);
-		}
-	}
-
-	class Ack extends TimerTask {
-
-		public Ack() {
-
-		}
-
-		private long startTime = 0;
-		private long currentTime = 0;
-		private double currentAck = 0;
-		private int CurrentNumAcks = 0;
-
-		@Override
-		public void run() {
-			startTime = stats.getLastAcktTime();
-			currentTime = System.currentTimeMillis();
-			CurrentNumAcks=stats.countAckMessage.get();
-			currentAck = (((double)CurrentNumAcks - stats
-					.getLastNumAcks()) / ((double)(currentTime - startTime)/1000.0));
-			stats.setLastNumAcks(CurrentNumAcks);
-			stats.setLastAckTime(currentTime);
-			stats.addAck(currentAck);
-		}
-
-		public String convertLongToTimeFormat(long time) {
-			Date date = new Date(time);
-			SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
-			return longToTime.format(date);
-		}
-	}
+	//	class Ack extends TimerTask {
+	//
+	//		public Ack() {
+	//
+	//		}
+	//
+	//		private long startTime = 0;
+	//		private long currentTime = 0;
+	//		private double currentAck = 0;
+	//		private int CurrentNumAcks = 0;
+	//
+	//		@Override
+	//		public void run() {
+	//			startTime = stats.getLastAcktTime();
+	//			currentTime = System.currentTimeMillis();
+	//			CurrentNumAcks=stats.countAckMessage.get();
+	//			currentAck = (((double)CurrentNumAcks - stats
+	//					.getLastNumAcks()) / ((double)(currentTime - startTime)/1000.0));
+	//			stats.setLastNumAcks(CurrentNumAcks);
+	//			stats.setLastAckTime(currentTime);
+	//			stats.addAck(currentAck);
+	//		}
+	//
+	//		public String convertLongToTimeFormat(long time) {
+	//			Date date = new Date(time);
+	//			SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
+	//			return longToTime.format(date);
+	//		}
+	//	}
 
 
 	//	class CheckFinished extends TimerTask {
