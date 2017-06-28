@@ -455,12 +455,9 @@ public class Zab extends Protocol {
 
 		if (hdrOrginal != null){
 			hdrOrginal.setType(ZabHeader.RESPONSER);
-			hdrOrginal.setMessageOrderInfo(messageInfo);
 		}
-		else{//Simulate return null if the requested data is not stored in Zab
-			//log.info(" Read null%%%%");
+		else{
 			hdrOrginal = new ZabHeader(ZabHeader.RESPONSER, messageInfo);
-			//readReplay = new Message(messageInfo.getId().getOriginator()).putHeader((short) 79, hdrResponse);
 		}
 		readReplay = new Message(messageInfo.getId().getOriginator()).putHeader(this.id, hdrOrginal);
 		long startTime = messageInfo.getId().getStartTime();

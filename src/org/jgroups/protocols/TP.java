@@ -2694,7 +2694,7 @@ public abstract class TP extends Protocol implements DiagnosticsHandler.ProbeHan
                 try {
                     if(count == 0) {
                         msg=queue.take();
-                        log.info("**** UDP Queue size = " + queue.size());
+                        //log.info("**** UDP Queue size = " + queue.size());
                         if(msg == null)
                             continue;
                         long size=msg.size();

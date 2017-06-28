@@ -60,6 +60,8 @@ public class ProtocolStats {
 
 	private static PrintWriter outFile;
 	private static PrintWriter railDelayPrint;
+	private static PrintWriter outFileWrite;
+	private static PrintWriter outFileRead;
 
 	private static PrintWriter outFileToWork;
 	private static PrintWriter outFileAllLat;
@@ -134,6 +136,10 @@ public class ProtocolStats {
 						new FileWriter(outDir +InetAddress.getLocalHost().getHostName()+ protocolName + ".csv", true)));
 				this.outFileAllLat = new PrintWriter(new BufferedWriter(
 						new FileWriter(outDir+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "All.csv", true)));
+				this.outFileWrite = new PrintWriter(new BufferedWriter(
+						new FileWriter(outDir+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "WW.csv", true)));
+				this.outFileRead = new PrintWriter(new BufferedWriter(
+						new FileWriter(outDir+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "RR.csv", true)));
 				this.outRRTime = new PrintWriter(new BufferedWriter(
 						new FileWriter(outDir +InetAddress.getLocalHost().getHostName()+ "recievedRT.csv", true)));
 			} catch (UnknownHostException e) {
@@ -407,6 +413,11 @@ public class ProtocolStats {
 			outFile.println("Write Latency 95th percentile: "+per95th);
 			outFile.println("Write Latency 99th percentile: "+per99th);
 		}
+		outFileWrite.println();
+		for (long lat: latencies){
+			//outFileToWork.println((double) (((double) lat)/1000000));
+			outFileWrite.println((double) (((double) lat)/1000000));
+		}
 
 		if(readLatencies.size()!=0){
 			avgRead = average(readLatencies);
@@ -424,6 +435,11 @@ public class ProtocolStats {
 			outFile.println("Read Latency 90th percentile: "+per90th);
 			outFile.println("Read Latency 95th percentile: "+per95th);
 			outFile.println("Read Latency 99th percentile: "+per99th);
+		}
+		outFileRead.println();
+		for (long lat: readLatencies){
+			//outFileToWork.println((double) (((double) lat)/1000000));
+			outFileRead.println((double) (((double) lat)/1000000));
 		}
 
 		List<Long> RWLatencies = new ArrayList<Long>();

@@ -44,7 +44,6 @@ public class CSInteraction extends Protocol {
 	@Property(name = "msg_size", description = "The max size of a msg between Z members.  Determines the number of msgs that can be bundled")
 	private int MSG_SIZE = 1000;
 
-
 	@Property(name = "Zab_size", description = "It is Zab cluster size")
 	private int clusterSize = 3;
 
