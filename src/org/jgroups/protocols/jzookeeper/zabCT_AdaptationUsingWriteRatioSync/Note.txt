@@ -1,0 +1,4 @@
+It works for N=3, 5 and 7. It is ZabCT Adaptation. It works for sync mode and slove blocking + sync mode.
+But the blocking sometimes occur in write 90% and 100%, but sometimes the experiment complete succssfully.
+Also this works for Async mode (just ZanInfinispan changed) when client wait time is 130ms. This implemetation does not only 
+commit proposal(s) if a proposal gets a quorum of ACK, then will commits all pervious uncommited proposals (if found) and the current proposal. 
