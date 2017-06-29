@@ -1,0 +1,1 @@
+It uses new Computing the Coin’s Probability (See EPEW++ Document). 
