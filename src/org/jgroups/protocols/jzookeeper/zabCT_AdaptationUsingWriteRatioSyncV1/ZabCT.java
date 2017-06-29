@@ -337,6 +337,7 @@ public class ZabCT extends Protocol {
 				reset();
 				break;
 			case ZabCTHeader.ZABCOMMIT:
+				log.info("Followewr/ Received ZABCOMMIT");
 				perCommit();
 				runingProtocol = Zab;
 				break;
@@ -344,9 +345,13 @@ public class ZabCT extends Protocol {
 				runingProtocol = ZabCT;
 				break;
 			case ZabCTHeader.SWITCHTOZAB:
+				log.info("Leader/ Received SWITCHTOZAB");
+
 				switchToZab();
 				break;
 			case ZabCTHeader.SWITCHTOZABCT:
+				log.info("Leader/ Received SWITCHTOZABCT");
+
 				countAllNeedSwitch++;
 				switchToZabCT();
 				break;
@@ -481,7 +486,7 @@ public class ZabCT extends Protocol {
 		ackToProcess.add(new ACK(local_addr, zxidACK)); //Follower log then ack to himself
 		switch(runingProtocol){
 		case Zab:
-			log.info("Descsion is--->"+"ZABBBBBB");
+			//log.info("Descsion is--->"+"ZABBBBBB");
 			ZabCTHeader hdrACK = new ZabCTHeader(ZabCTHeader.ZABACK, zxidACK);
 			Message ACKMessage = new Message(leader).putHeader(this.id, hdrACK);
 			//.setFlag(Message.Flag.DONT_BUNDLE);
@@ -553,8 +558,8 @@ public class ZabCT extends Protocol {
 		p.addAddressesACK(msgACK.getSrc());
 		if (isQuorum(p.getAddressesACK().size())) {
 			outstandingProposals.remove(ackZxid);
+			log.info("processACKForZab commit="+ackZxid);
 			commit(ackZxid);
-			//} 
 		}
 
 	}
@@ -599,6 +604,8 @@ public class ZabCT extends Protocol {
 				cpy.setDest(address);			
 				down_prot.down(new Event(Event.MSG, cpy));
 			}
+			log.info("Leader/ switchToZab() Send ZABCOMMIT");
+
 			runingProtocol=Zab;
 		}
 		perCommit();
@@ -610,9 +617,10 @@ public class ZabCT extends Protocol {
 	 * SWITCHTOZABCT message, otherwise do nothings.
 	 */
 	private synchronized void switchToZabCT(){
-		if(runingProtocol==Zab && countAllNeedSwitch==N){
+		if(runingProtocol==Zab && countAllNeedSwitch==(N-1)){
 			ZabCTHeader hdrCommit = new ZabCTHeader(ZabCTHeader.ZABCTCOMMIT);
 			Message commitMessage = new Message().putHeader(this.id, hdrCommit);
+			log.info("Leader/ switchToZabCT() Send ZABCTCOMMIT");
 
 			for (Address address : zabMembers) {
 				if(address.equals(leader))
@@ -633,11 +641,14 @@ public class ZabCT extends Protocol {
 	 */
 	private void perCommit() {
 		Set<Long> committable; 
+		log.info(" perCommit()");
 
 		if(!outstandingProposals.isEmpty()){
 			committable = new TreeSet<Long>(outstandingProposals.keySet());
 			for(long comittableZxid: committable){
 				outstandingProposals.remove(comittableZxid);
+				log.info("perCommit() Commiting="+comittableZxid);
+
 				commit(comittableZxid);
 			}
 			committable.clear();
@@ -684,7 +695,7 @@ public class ZabCT extends Protocol {
 		}
 		stats.incnumReqDelivered();
 		stats.setEndThroughputTime(System.currentTimeMillis());
-		//log.info("Zxid=:"+committedZxid);
+		log.info("Zxid=:"+committedZxid);
 		if (requestQueue.contains(messageOrderInfo.getId())){
 			long startTime = hdrOrginal.getMessageOrderInfo().getId().getStartTime();
 			long endTime = System.nanoTime();
@@ -1183,15 +1194,11 @@ public class ZabCT extends Protocol {
 	} 
 
 	class MeasuePropArrivalRate extends TimerTask {
-		//private int countSec=0;
-		//private double d=0;
+
 		private int lastNumProposal=0;
 		private double c2p2=0; //store result of (((double) theta/n) * ((double) 1/numProposalPerec));
-		private double p=0.0;
 		private double dMuliPropArr=0.0;
-		private int sec=0, count0=0, countNo0=0 ;
-		private String result=null;
-		private SortedSet<Double> ps = new TreeSet<Double>();
+		private int sec=0;
 		private DecimalFormat roundValue = new DecimalFormat("#.000");
 		private SortedSet<Double> pE1 = new TreeSet<Double>();
 		private SortedSet<Double> pE2 = new TreeSet<Double>();
@@ -1213,7 +1220,6 @@ public class ZabCT extends Protocol {
 			lastNumProposal = (stats.numProposal.get()-stats.lastNumProposal.get());
 			stats.lastNumProposal.set(stats.numProposal.get());
 
-			ArrayList<Double> removedp = new ArrayList<Double>();
 			TreeMap<Double, Double> copypW = new TreeMap<Double, Double>(pW);
 
 			if(delays_d.size()!=0)
@@ -1222,7 +1228,6 @@ public class ZabCT extends Protocol {
 				propArrivalRate.set( ((double) 1/lastNumProposal));
 				c2p2 = findCondtion2Part2(lastNumProposal);
 				c2p2= Double.parseDouble(roundValue.format(c2p2));
-				//	log.info("Max="+(Math.max(lastNumProposal,((double) 1/D))));
 				dMuliPropArr = d*(Math.max(lastNumProposal,((double) 1/D)));
 				for (double p: copypW.keySet()){
 					if(copypW.get(p)<dMuliPropArr){
@@ -1231,72 +1236,84 @@ public class ZabCT extends Protocol {
 					if(p<c2p2){
 						pE2.add(p);
 					}
-					for(double val:pE1){
-						if(pE2.contains(val))
-							intersection.add(val);
-					}
-					if (p>=c2p2 || copypW.get(p)>=dMuliPropArr){
-						removedp.add(p);
-					}
+				}
+				for(double val:pE1){
+					if(pE2.contains(val))
+						intersection.add(val);
 				}
 
 				log.info("pE1= "+pE1);
 				log.info("pE2= "+pE2);
-				log.info("pE1First/pE2Last="+pE1.first()+"/"+pE2.last());
+				//log.info("pE1First/pE2Last="+pE1.first()+"/"+pE2.last());
 
-				if(!removedp.isEmpty()){
-					for (double p:removedp){
-						copypW.remove(p);							
-					}
-				}
 				if (!intersection.isEmpty()){
 					if (runingProtocol==ZabCT){
-						final Entry<Double, Double> largeKey = copypW.lastEntry();
-						//zUnit.setP(largeKey.getKey());
-						zUnit.setP(intersection.last());
-						stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+largeKey.getKey()+","+sec);
-						pE1.clear();
-						pE2.clear();
-						intersection.clear();
-						return;
+						setp();
 					}
 					else{
+						zUnit.setP(intersection.last());			
 						ZabCTIter++;
+						log.info("ZabCTIter="+ZabCTIter);
+
 						if(ZabCTIter==ZABCTNOW){
 							log.info("Must Change to ZabCT   ********************************");
-							final Entry<Double, Double> largeKey = copypW.lastEntry();
-							//zUnit.setP(largeKey.getKey());
 							swicthToZabCT();
-							zUnit.setP(intersection.last());
-							ZabCTIter = 0;
-							justSwitched=ZabCT;
-							pE1.clear();
-							pE2.clear();
-							intersection.clear();
 						}
-						return;
 					}
+					pE1.clear();
+					pE2.clear();
+					intersection.clear();
+					return;
 				}
 				else { //This means P1*>P2*
 					newp = stats.findp(c, n, dMuliPropArr, c2p2, pE1.first(), pE2.last());
 					log.info("newp="+newp);
+					log.info(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+newp+","+sec);
 					if(newp!=0.0){
-						zUnit.setP(newp);
+						if (runingProtocol==ZabCT){
+							zUnit.setP(newp);
+						}
+						else{
+							zUnit.setP(newp);			
+							ZabCTIter++;
+							if(ZabCTIter==ZABCTNOW){
+								log.info("Must Change to ZabCT   ********************************");
+								swicthToZabCT();
+							}
+						}
+						pE1.clear();
+						pE2.clear();
+						return;
 					}else{
+						ZabCTIter=0;
 						if(runingProtocol==ZabCT && justSwitched!=Zab){
 							justSwitched=Zab;
 							swicthToZab();
+							log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+							log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
+									" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
 						}
-						log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-						log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
-								" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
+						pE1.clear();
+						pE2.clear();
+
 					}
-					pE1.clear();
-					pE2.clear();
 				}
 
 			}
 
+		}
+		public void setp(){
+			//final Entry<Double, Double> largeKey = copypW.lastEntry();
+			//zUnit.setP(largeKey.getKey());
+			zUnit.setP(intersection.last());
+			stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+intersection.last()+","+sec);
+			log.info(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+intersection.last()+","+sec);
+			log.info("intersection values="+intersection);
+			log.info("intersection p value="+intersection.last());
+
+			pE1.clear();
+			pE2.clear();
+			intersection.clear();
 		}
 		public void swicthToZab(){
 			ZabCTHeader switchNotify = new ZabCTHeader(ZabCTHeader.SWITCHTOZAB);
@@ -1317,6 +1334,11 @@ public class ZabCT extends Protocol {
 			} catch (Exception ex) {
 				log.error("failed sending switch message to Leader");
 			}
+			ZabCTIter = 0;
+			justSwitched=ZabCT;
+			pE1.clear();
+			pE2.clear();
+			intersection.clear();
 		}
 		public double measured(){
 			double sumd=0.0, avgDelay_d = 0.0;;
