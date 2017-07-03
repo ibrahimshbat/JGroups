@@ -660,7 +660,7 @@ public class ZabCT extends Protocol {
 	 * This method is invoked by leader. It sends COMMIT message to all follower and itself.
 	 */
 	private synchronized void commit(long zxidd) {
-
+		lastZxidCommitted=zxidd;
 		ZabCTHeader hdrCommit = new ZabCTHeader(ZabCTHeader.COMMIT, zxidd);
 		Message commitMessage = new Message().putHeader(this.id, hdrCommit);
 		//.setFlag(Message.Flag.DONT_BUNDLE);;
