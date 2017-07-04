@@ -308,14 +308,6 @@ public class ZabCT extends Protocol {
 				//stats.leaderCountACK.incrementAndGet();
 				ackToProcess.add(new ACK(msg.getSrc(), hdr.getZxid()));
 				break;
-				//			case ZabCTHeader.WARMUP:
-				//				stats.numProposal.set(0);
-				//				this.pW=this.stats.findpW(N, zabMembers.size());
-				//				if(!is_leader){
-				//					measureLamda.schedule(new MeasuePropArrivalRate(), 5, 1000);//For tail proposal timeout
-				//				}
-				//				log.info("Running warmup1");
-				//				break;
 			case ZabCTHeader.STARTWORKLOAD:
 				info = (String) msg.getObject();
 				log.info("info=====----> "+info);
@@ -336,9 +328,12 @@ public class ZabCT extends Protocol {
 				//timerAck.schedule(new Ack(), 1000, 5000);
 				reset();
 				break;
+			case ZabCTHeader.COMMIT:
+				delivery.add(new ZabCTHeader(ZabCTHeader.DELIVER, hdr.getZxid()));
+				break;
 			case ZabCTHeader.ZABCOMMIT:
 				log.info("Followewr/ Received ZABCOMMIT");
-				perCommit();
+				//perCommitFollower();
 				runingProtocol = Zab;
 				break;
 			case ZabCTHeader.ZABCTCOMMIT:
@@ -481,9 +476,9 @@ public class ZabCT extends Protocol {
 		//p.setMessageOrderInfo(msgInfo);
 		p = new Proposal();
 		p.setMessageOrderInfo(msgInfo);
-		outstandingProposals.put(zxidACK, p);
+		outstandingProposals.put(zxidACK, p);// No need for Zab
 		queuedProposalMessage.put(zxidACK, hrdAck);
-		ackToProcess.add(new ACK(local_addr, zxidACK)); //Follower log then ack to himself
+		//ackToProcess.add(new ACK(local_addr, zxidACK)); //Follower log then ack to himself. No need for Zab
 		switch(runingProtocol){
 		case Zab:
 			//log.info("Descsion is--->"+"ZABBBBBB");
@@ -498,6 +493,8 @@ public class ZabCT extends Protocol {
 			//ackToProcess.add(zxidACK);
 			break;
 		case ZabCT:
+			//outstandingProposals.put(zxidACK, p);
+			ackToProcess.add(new ACK(local_addr, zxidACK)); //Follower log then ack to himself
 			//log.info("Descsion is--->"+"ZABCTTTTTTTTTT");
 			//log.info("p=="+zUnit.getP());
 			if (zUnit.SendAckOrNoSend()){// || ackedNextProposal) {
@@ -558,7 +555,7 @@ public class ZabCT extends Protocol {
 		p.addAddressesACK(msgACK.getSrc());
 		if (isQuorum(p.getAddressesACK().size())) {
 			outstandingProposals.remove(ackZxid);
-			log.info("processACKForZab commit="+ackZxid);
+			//log.info("processACKForZab commit="+ackZxid);
 			commit(ackZxid);
 		}
 
@@ -581,6 +578,7 @@ public class ZabCT extends Protocol {
 			long zxidCommiting = lastZxidCommitted+1;
 			lastZxidCommitted = fourthL.getZxid();
 			for (long z = zxidCommiting; z < (fourthL.getZxid()+1); z++){
+				//log.info("processACK Removing==="+z);
 				outstandingProposals.remove(z);
 				delivery.add(new ZabCTHeader(ZabCTHeader.DELIVER, z));
 			}
@@ -604,7 +602,7 @@ public class ZabCT extends Protocol {
 				cpy.setDest(address);			
 				down_prot.down(new Event(Event.MSG, cpy));
 			}
-			log.info("Leader/ switchToZab() Send ZABCOMMIT");
+			//log.info("Leader/ switchToZab() Send ZABCOMMIT");
 
 			runingProtocol=Zab;
 		}
@@ -620,7 +618,7 @@ public class ZabCT extends Protocol {
 		if(runingProtocol==Zab && countAllNeedSwitch==(N-1)){
 			ZabCTHeader hdrCommit = new ZabCTHeader(ZabCTHeader.ZABCTCOMMIT);
 			Message commitMessage = new Message().putHeader(this.id, hdrCommit);
-			log.info("Leader/ switchToZabCT() Send ZABCTCOMMIT");
+			//log.info("Leader/ switchToZabCT() Send ZABCTCOMMIT");
 
 			for (Address address : zabMembers) {
 				if(address.equals(leader))
@@ -635,7 +633,7 @@ public class ZabCT extends Protocol {
 	}
 
 	/*
-	 * This method is invoked by all replicas (including leader).
+	 * This method is invoked by leader.
 	 * It just before starts Zab, commit all proposals in 
 	 * outstandingProposalssends list.
 	 */
@@ -647,13 +645,45 @@ public class ZabCT extends Protocol {
 			committable = new TreeSet<Long>(outstandingProposals.keySet());
 			for(long comittableZxid: committable){
 				outstandingProposals.remove(comittableZxid);
-				log.info("perCommit() Commiting="+comittableZxid);
-
+				//log.info("perCommit() Commiting="+comittableZxid);
+				//queuedProposalMessage.remove(comittableZxid);
 				commit(comittableZxid);
 			}
 			committable.clear();
 		}
 
+	}
+
+	/*
+	 * This method is invoked by follower.
+	 * It just before starts Zab, commit all proposals in 
+	 * outstandingProposalssends list.
+	 */
+	private void perCommitFollower() {
+		Set<Long> committable; 
+		//log.info(" perCommit()");
+
+		if(!outstandingProposals.isEmpty()){
+			committable = new TreeSet<Long>(outstandingProposals.keySet());
+			for(long comittableZxid: committable){
+				outstandingProposals.remove(comittableZxid);
+				//log.info("perCommit() Commiting="+comittableZxid);
+				//queuedProposalMessage.remove(comittableZxid);
+				commitFollower(comittableZxid);
+			}
+			committable.clear();
+		}
+
+	}
+
+	/*
+	 * This method is invoked by leader. It sends COMMIT message to all follower and itself.
+	 */
+	private void commitFollower(long zxidd) {
+		lastZxidCommitted=zxidd;
+		//.setFlag(Message.Flag.DONT_BUNDLE);;
+		//log.info("commit hdrOrginal zxid === " + zxidd);
+		delivery.add(new ZabCTHeader(ZabCTHeader.DELIVER, zxidd));
 	}
 
 	/*
@@ -665,7 +695,7 @@ public class ZabCT extends Protocol {
 		Message commitMessage = new Message().putHeader(this.id, hdrCommit);
 		//.setFlag(Message.Flag.DONT_BUNDLE);;
 		ZabCTHeader hdrOrginal = queuedProposalMessage.get(zxidd);
-		//log.info("hdrOrginal zxid = " + hdrOrginal.getZxid());
+		//log.info("commit hdrOrginal zxid === " + zxidd);
 		MessageOrderInfo messageOrderInfo = hdrOrginal.getMessageOrderInfo();
 		hdrCommit.setMessageOrderInfo(messageOrderInfo);
 
@@ -695,7 +725,7 @@ public class ZabCT extends Protocol {
 		}
 		stats.incnumReqDelivered();
 		stats.setEndThroughputTime(System.currentTimeMillis());
-		log.info("Zxid=:"+committedZxid);
+		log.info("Zxid=:"+committedZxid+" Protocol="+runingProtocol);
 		if (requestQueue.contains(messageOrderInfo.getId())){
 			long startTime = hdrOrginal.getMessageOrderInfo().getId().getStartTime();
 			long endTime = System.nanoTime();
@@ -892,54 +922,6 @@ public class ZabCT extends Protocol {
 
 	}
 
-	//	final class SendToFollower implements Runnable {
-	//		private short id;
-	//
-	//		public SendToFollower(short id) {
-	//			this.id=id;
-	//		}
-	//
-	//		@Override
-	//		public void run() {
-	//			startSentToFollower();
-	//		}
-
-	//		private void startSentToFollower() {
-	//			ZabCoinTossingHeader hdrACK=null;
-	//			Message ackMessage = null;
-	//			long ackedzxid = 0;
-	//			long currentTime=0;
-	//			while (true) {
-	//				try {
-	//					ackedzxid = sendACKToFollower.take();
-	//					currentTime=System.currentTimeMillis();
-	//					Timeout timeout = new Timeout();				
-	//					if(!timeouts.isEmpty()){
-	//						timeout = timeouts.first();
-	//						timeouts.remove(timeout);
-	//						timeout.setSendBackTimeout(currentTime);
-	//						//log.info("timeouts!=isEmpty()");
-	//						//log.info("Zxid="+ackedzxid+"/Send Time="+timeout.getSendTime()+"SB="+currentTime);
-	//					}
-	//					else{
-	//						timeout = new Timeout(currentTime);
-	//						//log.info("timeouts=isEmpty()");
-	//						//log.info("Zxid="+ackedzxid+"/Send Time="+currentTime+"NoSB");
-	//					}
-	//					hdrACK = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACK, ackedzxid, timeout);
-	//					ackMessage = new Message(otherFollower).putHeader(this.id, hdrACK);
-	//					ackMessage.setFlag(Message.Flag.DONT_BUNDLE);
-	//					Message cpyy = ackMessage.copy();
-	//					down_prot.down(new Event(Event.MSG, cpyy));
-	//				} catch (InterruptedException e) {
-	//					e.printStackTrace();
-	//				}          
-	//
-	//			}
-	//		}
-	//
-	//	} 
-
 	final class ProcessorAck implements Runnable {
 		@Override
 		public void run() {
@@ -962,65 +944,6 @@ public class ZabCT extends Protocol {
 
 	} 
 
-	//	final class ProcessorAckForWarmUp implements Runnable {
-	//		@Override
-	//		public void run() {
-	//			processAckedZxid();
-	//
-	//		}
-	//
-	//		private void processAckedZxid() {
-	//			ACK ackedzxid = null;
-	//			while (true) {
-	//				try {
-	//					ackedzxid = ackToProcess.take();
-	//				} catch (InterruptedException e) {
-	//					e.printStackTrace();
-	//				}          
-	//				processACKForWarmUp(ackedzxid);
-	//
-	//			}
-	//		}
-	//
-	//	} 
-
-	//	final class ProcessACKDelay implements Runnable {
-	//		private long sendTime=0;
-	//		private long arriveTime=0;
-	//		private long sendBackTime=0;
-	//		private long idleTime=0;
-	//		private long delay=0;
-	//		private long arriveTimeForRoundTrip=0;
-	//
-	//
-	//		@Override
-	//		public void run() {
-	//			startProcess();
-	//		}
-	//
-	//		private void startProcess() {
-	//			ZabCoinTossingHeader hdrTimeout= null;
-	//			while (true) {
-	//				try {
-	//					hdrTimeout = processTimeout.take();
-	//					Timeout timeout = hdrTimeout.getTimeout();
-	//					sendBackTime = timeout.getSendBackTimeout();
-	//					arriveTime =  timeout.getArriveTime();
-	//					sendTime = timeout.getSendTime();
-	//					arriveTimeForRoundTrip = timeout.getArriveTimeForRoundTrip();
-	//					idleTime =sendBackTime-arriveTime;
-	//					delay=(arriveTimeForRoundTrip-sendTime)-idleTime;
-	//					//log.info("ST="+sendTime+"/AT="+arriveTime+"/SB="+sendBackTime+"/LAT="
-	//					//+arriveTimeForRoundTrip+"/id="+idleTime+"/d="+delay);
-	//
-	//					delays.add((delay/2));//divide by 2 to get one round;
-	//				} catch (InterruptedException e) {
-	//					e.printStackTrace();
-	//				}          
-	//			}
-	//		}
-	//
-	//	} 
 	final class MessageHandler implements Runnable {
 		@Override
 		public void run() {
@@ -1074,82 +997,6 @@ public class ZabCT extends Protocol {
 		}
 	}
 
-	//	class Rate extends TimerTask {
-	//
-	//		public Rate() {
-	//
-	//		}
-	//
-	//		private long startTime = 0;
-	//		private long currentTime = 0;
-	//		private double currentThroughput = 0;
-	//		private int finishedThroughput = 0;
-	//
-	//		@Override
-	//		public void run() {
-	//			startTime = stats.getLastThroughputTime();
-	//			currentTime = System.currentTimeMillis();
-	//			finishedThroughput=stats.getnumReqDelivered();			
-	//			currentThroughput = (((double)finishedThroughput - stats
-	//					.getLastNumReqDeliveredBefore()) / ((double)(currentTime - startTime)/1000.0));
-	//			stats.setLastNumReqDeliveredBefore(finishedThroughput);
-	//			stats.setLastThroughputTime(currentTime);
-	//			stats.addThroughput(currentThroughput);
-	//		}
-	//
-	//		public String convertLongToTimeFormat(long time) {
-	//			Date date = new Date(time);
-	//			SimpleDateFormat longToTime = new SimpleDateFormat("HH:mm:ss.SSSZ");
-	//			return longToTime.format(date);
-	//		}
-	//	}
-
-
-	//	class TailTimeOutTask extends TimerTask {
-	//		public TailTimeOutTask() {
-	//		}
-	//
-	//		public void run() {
-	//			ZabCoinTossingHeader hdrACK = null;
-	//			Message ackMessage = null;
-	//			if(!tailProposal.isEmpty()){
-	//				synchronized(tailProposal){
-	//					copyTailProposals= new LinkedHashMap<Long,Long>(tailProposal);
-	//				}
-	//				//stats.countTailTimeout.incrementAndGet();
-	//				//log.info("Tail size: "+tailProposal.size());
-	//				for (long zx:copyTailProposals.keySet()){
-	//					long diffTime = copyTailProposals.get(zx) - System.currentTimeMillis();
-	//					if (diffTime <= 0 ){//tail timeout elapses
-	//						log.info("Procssing ACK casuing by timeout====>: "+zx);
-	//						hdrACK = new ZabCoinTossingHeader(ZabCoinTossingHeader.ACK, zx);
-	//						ackMessage = new Message(leader).putHeader(id, hdrACK);
-	//						down_prot.down(new Event(Event.MSG, ackMessage)); 
-	//						ackToProcess.add(zx);
-	//						log.info("Send Ack timeout  for zxid="+zx);
-	//						//log.info("count Tail timeout elapsed:="+stats.countTailTimeout.incrementAndGet());
-	//						//sendACKToFollower.add(zx);
-	//						synchronized(tailProposal){
-	//							tailProposal.remove(zx);
-	//						}
-	//					}
-	//					else{
-	//						timerForTail.cancel();
-	//						timerForTail = new Timer();
-	//						timerForTail.schedule(new TailTimeOutTask(), 0, diffTime);  							
-	//					}
-	//					break;
-	//				}
-	//				copyTailProposals.clear();
-	//			}
-	//
-	//
-	//
-	//		}
-	//
-	//
-	//
-	//	}
 
 	final class ProcessACKDelay implements Runnable {
 		private long sendTime=0;
@@ -1242,8 +1089,8 @@ public class ZabCT extends Protocol {
 						intersection.add(val);
 				}
 
-				log.info("pE1= "+pE1);
-				log.info("pE2= "+pE2);
+				//log.info("pE1= "+pE1);
+				//log.info("pE2= "+pE2);
 				//log.info("pE1First/pE2Last="+pE1.first()+"/"+pE2.last());
 
 				if (!intersection.isEmpty()){
@@ -1265,25 +1112,41 @@ public class ZabCT extends Protocol {
 					intersection.clear();
 					return;
 				}
-				else { //This means P1*>P2*
-					newp = stats.findp(c, n, dMuliPropArr, c2p2, pE1.first(), pE2.last());
-					log.info("newp="+newp);
-					log.info(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+newp+","+sec);
-					if(newp!=0.0){
-						if (runingProtocol==ZabCT){
-							zUnit.setP(newp);
-						}
-						else{
-							zUnit.setP(newp);			
-							ZabCTIter++;
-							if(ZabCTIter==ZABCTNOW){
-								log.info("Must Change to ZabCT   ********************************");
-								swicthToZabCT();
+				else { //This means P1*>P2* OR may pE1 or pE2 is empty
+					//log.info("pE1 is empty--->"+pE1.isEmpty());
+					//log.info("pE2 is empty--->"+pE2.isEmpty());
+					if(!pE1.isEmpty() && !pE2.isEmpty()){
+						newp = stats.findp(c, n, dMuliPropArr, c2p2, pE1.first(), pE2.last());
+						//log.info("newp="+newp);
+						//log.info(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+newp+","+sec);
+						if(newp!=0.0){
+							if (runingProtocol==ZabCT){
+								zUnit.setP(newp);
 							}
+							else{
+								zUnit.setP(newp);			
+								ZabCTIter++;
+								if(ZabCTIter==ZABCTNOW){
+									log.info("Must Change to ZabCT   ********************************");
+									swicthToZabCT();
+								}
+							}
+							pE1.clear();
+							pE2.clear();
+							return;
+						}else{
+							ZabCTIter=0;
+							if(runingProtocol==ZabCT && justSwitched!=Zab){
+								justSwitched=Zab;
+								swicthToZab();
+								log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+								log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
+										" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
+							}
+							pE1.clear();
+							pE2.clear();
+
 						}
-						pE1.clear();
-						pE2.clear();
-						return;
 					}else{
 						ZabCTIter=0;
 						if(runingProtocol==ZabCT && justSwitched!=Zab){
