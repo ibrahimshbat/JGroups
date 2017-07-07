@@ -129,7 +129,7 @@ public class ZabAA extends Protocol {
 		messageStore.clear();
 		latestZxidSeen = 0;
 		//ackedNextProposal=false;
-		zUnit.setP(0.5); //Change to 1.0 to Have ZabAA
+		zUnit.setP(1.0); //Change to 0.5 to Have ZabCT
 		if(!is_leader){
 			log.info("Starting Task");
 			log.info("I am Follower");
