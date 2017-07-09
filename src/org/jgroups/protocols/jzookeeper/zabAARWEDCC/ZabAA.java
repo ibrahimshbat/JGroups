@@ -90,7 +90,7 @@ public class ZabAA extends Protocol {
 	private static String info = null;
 	private final List<ACK> vector = new ArrayList<ACK>();
 	private long latestZxidProposed=0; // From the leader
-	private int majLargest=((N-1)/2)-1 ; //  ((N-1)/2)-1 follower in ZabCT// (N-1)/2 follower in ZabCt
+	private int majLargest=(N-1)/2 ; //  ((N-1)/2)-1 follower in ZabCT// (N-1)/2 follower in ZabCt
 
 
 	public ZabAA(){
