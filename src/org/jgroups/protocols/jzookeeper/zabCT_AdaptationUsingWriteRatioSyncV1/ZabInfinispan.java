@@ -627,7 +627,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			ZabCTHeader hdrReq = new ZabCTHeader(ZabCTHeader.STARTWORKLOAD);
 			Message startedMessage = new Message().putHeader((short) 78, hdrReq);
 			startedMessage.setFlag(Message.Flag.DONT_BUNDLE);
-			startedMessage.setObject(read_percentage+":"+num_threads);
+			startedMessage.setObject(waitSS+":"+read_percentage+":"+num_threads);
 			for (Address address : box) {
 				Message cpy = startedMessage.copy();
 				cpy.setDest(address);
@@ -756,17 +756,17 @@ public class ZabInfinispan extends ReceiverAdapter {
 				}
 
 				boolean get=Util.tossWeightedCoin(read_per);
-				if(!this.warmStage){
+				//if(!this.warmStage){
 					//long startT = System.currentTimeMillis(); 
-					try {
-						Thread.sleep(50);
-					} catch (InterruptedException e) {
+					//try {
+						//Thread.sleep(50);
+					//} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+						//e.printStackTrace();
+					//}
 					//long endT = System.currentTimeMillis();
 					//System.out.println("Wait="+(endT-startT));
-				}
+				//}
 				//System.out.println(" is it get? "+get);
 				try {
 					if(get) { // sync GET

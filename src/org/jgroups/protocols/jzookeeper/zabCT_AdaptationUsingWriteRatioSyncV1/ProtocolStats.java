@@ -111,7 +111,7 @@ public class ProtocolStats {
 		this.countAckMessage = new AtomicInteger(0);
 		System.out.println("Dir="+outDir);
 		if (info.length()>1){
-			this.dirTestType = "R-"+ (Double.parseDouble(info.split(":")[0]));
+			this.dirTestType = "R-"+ (Double.parseDouble(info.split(":")[1]));
 			System.out.println("Dir="+outDir+dirTestType);
 			try {
 				this.outFile = new PrintWriter(new BufferedWriter(new FileWriter(

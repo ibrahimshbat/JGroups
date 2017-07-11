@@ -81,7 +81,7 @@ public class ZabCT extends Protocol {
 	private ProtocolStats stats = new ProtocolStats();
 	private int numABRecieved = 0;
 	@Property(name = "ZabCoinTossing_size", description = "It is ZabCoinTossing cluster size")
-	private final int N = 9;
+	private final int N = 5;
 	private int c = 0; //Num of crashed servers
 	private final int THETA_N3 = 3767; //Using Sync and no wait time
 	private final int THETA_N5 = 2251;//Using Sync and no wait time
@@ -189,22 +189,24 @@ public class ZabCT extends Protocol {
 		is_warm = false;
 		//latestZxidSeen = 0;
 		//requestsInProcess.set(0);
-		//ackedNextProposal=false;
+		//ackedNextProposal=false;100-perRW
+		theta = ConstantPara.findTheta((int) waitSentTime, N, (int) (100-(percentRW*100)));
+		log.info("theta====="+theta);
 		if (N==3){
 			d = (double) D_N3/1000;
-			theta = (int) THETA_N3;
+			//theta = (int) THETA_N3;
 		} 
 		else if (N==5){
 			d = (double) D_N5/1000;
-			theta = (int) THETA_N5;
+			//theta = (int) THETA_N5;
 		}
 		else if(N==7){
 			d = (double) D_N7/1000;
-			theta = (int) THETA_N7;
+			//theta = (int) THETA_N7;
 		}
 		else {
 			d = (double) D_N9/1000;
-			theta = (int) THETA_N9;
+			//theta = (int) THETA_N9;
 		}
 		//zUnit.setP(p_warmup);
 		this.pW=this.stats.findpW(N, zabMembers.size());
@@ -311,12 +313,12 @@ public class ZabCT extends Protocol {
 			case ZabCTHeader.STARTWORKLOAD:
 				info = (String) msg.getObject();
 				log.info("info=====----> "+info);
-				//String waitSTString = info.split(":")[0];
-				//waitSentTime = Long.parseLong(waitSTString);
+				String waitSTString = info.split(":")[0];
+				waitSentTime = Long.parseLong(waitSTString);
 				//measureLamda.cancel();
-				String r = info.split(":")[0];
+				String r = info.split(":")[1];
 				percentRW = Double.parseDouble(r);
-				numberOfSenderInEachClient = Integer.parseInt(info.split(":")[1]);
+				numberOfSenderInEachClient = Integer.parseInt(info.split(":")[2]);
 				this.stats = new ProtocolStats(ProtocolName, 10,
 						numberOfSenderInEachClient, outDir, false, info);
 				stats.setStartThroughputTime(System.currentTimeMillis());
@@ -332,7 +334,7 @@ public class ZabCT extends Protocol {
 				delivery.add(new ZabCTHeader(ZabCTHeader.DELIVER, hdr.getZxid()));
 				break;
 			case ZabCTHeader.ZABCOMMIT:
-				log.info("Followewr/ Received ZABCOMMIT");
+				//log.info("Followewr/ Received ZABCOMMIT");
 				//perCommitFollower();
 				runingProtocol = Zab;
 				break;
@@ -340,12 +342,12 @@ public class ZabCT extends Protocol {
 				runingProtocol = ZabCT;
 				break;
 			case ZabCTHeader.SWITCHTOZAB:
-				log.info("Leader/ Received SWITCHTOZAB");
+				//log.info("Leader/ Received SWITCHTOZAB");
 
 				switchToZab();
 				break;
 			case ZabCTHeader.SWITCHTOZABCT:
-				log.info("Leader/ Received SWITCHTOZABCT");
+				//log.info("Leader/ Received SWITCHTOZABCT");
 
 				countAllNeedSwitch++;
 				switchToZabCT();
@@ -639,7 +641,7 @@ public class ZabCT extends Protocol {
 	 */
 	private void perCommit() {
 		Set<Long> committable; 
-		log.info(" perCommit()");
+		//log.info(" perCommit()");
 
 		if(!outstandingProposals.isEmpty()){
 			committable = new TreeSet<Long>(outstandingProposals.keySet());
@@ -715,7 +717,7 @@ public class ZabCT extends Protocol {
 		MessageOrderInfo messageOrderInfo = null;
 		ZabCTHeader hdrOrginal = queuedProposalMessage.get(committedZxid);
 		if (hdrOrginal == null){
-			log.info("**** hdrOrginal is null ****");
+			//log.info("**** hdrOrginal is null ****");
 			return;
 		}
 		messageOrderInfo = hdrOrginal.getMessageOrderInfo();
@@ -725,7 +727,7 @@ public class ZabCT extends Protocol {
 		}
 		stats.incnumReqDelivered();
 		stats.setEndThroughputTime(System.currentTimeMillis());
-		log.info("Zxid=:"+committedZxid+" Protocol="+runingProtocol);
+		//log.info("Zxid=:"+committedZxid+" Protocol="+runingProtocol);
 		if (requestQueue.contains(messageOrderInfo.getId())){
 			long startTime = hdrOrginal.getMessageOrderInfo().getId().getStartTime();
 			long endTime = System.nanoTime();
@@ -734,7 +736,6 @@ public class ZabCT extends Protocol {
 			requestQueue.remove(messageOrderInfo.getId());
 		}
 		//requestsInProcess.decrementAndGet();
-
 	}
 
 	private void sendOrderResponse(MessageOrderInfo messageOrderInfo){
@@ -1100,8 +1101,8 @@ public class ZabCT extends Protocol {
 					else{
 						zUnit.setP(intersection.last());			
 						ZabCTIter++;
-						log.info("ZabCTIter="+ZabCTIter);
-
+						//log.info("ZabCTIter="+ZabCTIter);
+						log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",A"+runingProtocol+","+sec);
 						if(ZabCTIter==ZABCTNOW){
 							log.info("Must Change to ZabCT   ********************************");
 							swicthToZabCT();
@@ -1135,6 +1136,7 @@ public class ZabCT extends Protocol {
 							pE2.clear();
 							return;
 						}else{
+							log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",B"+runingProtocol+","+sec);
 							ZabCTIter=0;
 							if(runingProtocol==ZabCT && justSwitched!=Zab){
 								justSwitched=Zab;
@@ -1148,6 +1150,7 @@ public class ZabCT extends Protocol {
 
 						}
 					}else{
+						log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",C"+runingProtocol+","+sec);
 						ZabCTIter=0;
 						if(runingProtocol==ZabCT && justSwitched!=Zab){
 							justSwitched=Zab;
@@ -1170,7 +1173,7 @@ public class ZabCT extends Protocol {
 			//zUnit.setP(largeKey.getKey());
 			zUnit.setP(intersection.last());
 			stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+intersection.last()+","+sec);
-			log.info(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+intersection.last()+","+sec);
+			log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+","+intersection.last()+","+","+runingProtocol+","+sec);
 			log.info("intersection values="+intersection);
 			log.info("intersection p value="+intersection.last());
 
@@ -1213,11 +1216,14 @@ public class ZabCT extends Protocol {
 				avgDelay_d = sumd/delays_d.size();
 				delays_d.clear();
 			}
+			//log.info("d="+avgDelay_d);
 			return avgDelay_d;
 		}
 		public double findCondtion2Part2(int numProposalPerec){
 			double c2p2=0.0;
 			c2p2 = (((double) theta/n) * ((double) 1/numProposalPerec));
+			//c2p2 = (((double) numProposalPerec/n) * ((double) 1/numProposalPerec));
+
 			return c2p2;
 		}
 
