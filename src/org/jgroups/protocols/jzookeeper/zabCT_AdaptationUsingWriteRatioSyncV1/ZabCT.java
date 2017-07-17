@@ -81,7 +81,7 @@ public class ZabCT extends Protocol {
 	private ProtocolStats stats = new ProtocolStats();
 	private int numABRecieved = 0;
 	@Property(name = "ZabCoinTossing_size", description = "It is ZabCoinTossing cluster size")
-	private final int N = 5;
+	private final int N = 3;
 	private int c = 0; //Num of crashed servers
 	private final int THETA_N3 = 3767; //Using Sync and no wait time
 	private final int THETA_N5 = 2251;//Using Sync and no wait time
@@ -1071,12 +1071,13 @@ public class ZabCT extends Protocol {
 			TreeMap<Double, Double> copypW = new TreeMap<Double, Double>(pW);
 
 			if(delays_d.size()!=0)
-				d = (double) measured()/1000.0;
+				d = Double.parseDouble(roundValue.format(((double) measured()/1000.0)));
 			if (lastNumProposal!=0){
+				theta = lastNumProposal;
 				propArrivalRate.set( ((double) 1/lastNumProposal));
 				c2p2 = findCondtion2Part2(lastNumProposal);
 				c2p2= Double.parseDouble(roundValue.format(c2p2));
-				dMuliPropArr = d*(Math.max(lastNumProposal,((double) 1/D)));
+				dMuliPropArr = Double.parseDouble(roundValue.format(d*(Math.max(lastNumProposal,((double) 1/D)))));
 				for (double p: copypW.keySet()){
 					if(copypW.get(p)<dMuliPropArr){
 						pE1.add(p);
@@ -1090,27 +1091,17 @@ public class ZabCT extends Protocol {
 						intersection.add(val);
 				}
 
-				//log.info("pE1= "+pE1);
-				//log.info("pE2= "+pE2);
-				//log.info("pE1First/pE2Last="+pE1.first()+"/"+pE2.last());
-
 				if (!intersection.isEmpty()){
-					if (runingProtocol==ZabCT){
-						setp();
-					}
-					else{
-						zUnit.setP(intersection.last());			
+					zUnit.setP((c2p2-0.001));
+					setp(d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), pE2.last(), (c2p2-0.001));
+					if (runingProtocol!=ZabCT){
 						ZabCTIter++;
-						//log.info("ZabCTIter="+ZabCTIter);
 						log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",A"+runingProtocol+","+sec);
 						if(ZabCTIter==ZABCTNOW){
 							log.info("Must Change to ZabCT   ********************************");
 							swicthToZabCT();
 						}
 					}
-					pE1.clear();
-					pE2.clear();
-					intersection.clear();
 					return;
 				}
 				else { //This means P1*>P2* OR may pE1 or pE2 is empty
@@ -1121,19 +1112,15 @@ public class ZabCT extends Protocol {
 						//log.info("newp="+newp);
 						//log.info(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+newp+","+sec);
 						if(newp!=0.0){
-							if (runingProtocol==ZabCT){
-								zUnit.setP(newp);
-							}
-							else{
-								zUnit.setP(newp);			
+							zUnit.setP(newp);
+							setp(d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), pE2.last(), newp);
+							if (runingProtocol!=ZabCT){
 								ZabCTIter++;
 								if(ZabCTIter==ZABCTNOW){
 									log.info("Must Change to ZabCT   ********************************");
 									swicthToZabCT();
 								}
 							}
-							pE1.clear();
-							pE2.clear();
 							return;
 						}else{
 							log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",B"+runingProtocol+","+sec);
@@ -1147,7 +1134,7 @@ public class ZabCT extends Protocol {
 							}
 							pE1.clear();
 							pE2.clear();
-
+							return;
 						}
 					}else{
 						log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",C"+runingProtocol+","+sec);
@@ -1161,21 +1148,20 @@ public class ZabCT extends Protocol {
 						}
 						pE1.clear();
 						pE2.clear();
-
 					}
 				}
 
 			}
 
 		}
-		public void setp(){
+		public void setp(double dd, int lamda, double eq1, double eq2, double p1star, double p2star, double pp){
 			//final Entry<Double, Double> largeKey = copypW.lastEntry();
 			//zUnit.setP(largeKey.getKey());
-			zUnit.setP(intersection.last());
-			stats.addResult(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+intersection.last()+","+sec);
-			log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+","+intersection.last()+","+","+runingProtocol+","+sec);
-			log.info("intersection values="+intersection);
-			log.info("intersection p value="+intersection.last());
+			//zUnit.setP(intersection.last());
+			stats.addResult(""+dd+","+lamda+","+eq1+","+eq2+","+p1star+","+p2star+","+pp+","+runingProtocol+","+(++sec));
+			//log.info(""+dd+","+lamda+","+theta+","+eq1+","+eq2+","+p1star+","+p2star+","+pp+","+runingProtocol+","+(++sec));
+			//log.info("intersection values="+intersection);
+			//log.info("p value="+pp);
 
 			pE1.clear();
 			pE2.clear();
@@ -1202,9 +1188,6 @@ public class ZabCT extends Protocol {
 			}
 			ZabCTIter = 0;
 			justSwitched=ZabCT;
-			pE1.clear();
-			pE2.clear();
-			intersection.clear();
 		}
 		public double measured(){
 			double sumd=0.0, avgDelay_d = 0.0;;
@@ -1221,8 +1204,8 @@ public class ZabCT extends Protocol {
 		}
 		public double findCondtion2Part2(int numProposalPerec){
 			double c2p2=0.0;
-			c2p2 = (((double) theta/n) * ((double) 1/numProposalPerec));
-			//c2p2 = (((double) numProposalPerec/n) * ((double) 1/numProposalPerec));
+			//c2p2 = (((double) theta/n) * ((double) 1/numProposalPerec));
+			c2p2 = (((double) numProposalPerec/n) * ((double) 1/numProposalPerec));
 
 			return c2p2;
 		}
