@@ -416,7 +416,7 @@ public class ProtocolStats {
 		while(newp>=P2){
 			newp=Double.parseDouble(roundValue.format(newp));
 			newW = findWForRangep(newp, n+1, c);
-			//log.info("W(P)="+newW);
+			log.info("W(P)="+newW+" P="+newp);
 
 			if (newp<=c2 && newW<=c1){	
 				p=newp;

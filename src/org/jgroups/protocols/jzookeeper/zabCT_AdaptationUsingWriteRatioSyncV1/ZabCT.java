@@ -81,7 +81,7 @@ public class ZabCT extends Protocol {
 	private ProtocolStats stats = new ProtocolStats();
 	private int numABRecieved = 0;
 	@Property(name = "ZabCoinTossing_size", description = "It is ZabCoinTossing cluster size")
-	private final int N = 3;
+	private final int N =5;
 	private int c = 0; //Num of crashed servers
 	private final int THETA_N3 = 3767; //Using Sync and no wait time
 	private final int THETA_N5 = 2251;//Using Sync and no wait time
@@ -304,6 +304,7 @@ public class ZabCT extends Protocol {
 				break;          		
 			case ZabCTHeader.ZABACK:
 				processACKForZab(msg);
+				stats.countAckMessage.incrementAndGet();
 				break;
 			case ZabCTHeader.ZABCTACK:
 				stats.countAckMessage.incrementAndGet();
@@ -1093,10 +1094,11 @@ public class ZabCT extends Protocol {
 
 				if (!intersection.isEmpty()){
 					zUnit.setP((c2p2-0.001));
+					log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","+ pE2.last()+","
+							+(c2p2-0.001)+","+runingProtocol+","+"C1"+","+sec);
 					setp(d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), pE2.last(), (c2p2-0.001));
 					if (runingProtocol!=ZabCT){
 						ZabCTIter++;
-						log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",A"+runingProtocol+","+sec);
 						if(ZabCTIter==ZABCTNOW){
 							log.info("Must Change to ZabCT   ********************************");
 							swicthToZabCT();
@@ -1105,14 +1107,16 @@ public class ZabCT extends Protocol {
 					return;
 				}
 				else { //This means P1*>P2* OR may pE1 or pE2 is empty
-					//log.info("pE1 is empty--->"+pE1.isEmpty());
-					//log.info("pE2 is empty--->"+pE2.isEmpty());
+					
 					if(!pE1.isEmpty() && !pE2.isEmpty()){
+						log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","+ pE2.last()+","
+								+"Not Yet"+","+runingProtocol+","+"C2"+","+sec);
 						newp = stats.findp(c, n, dMuliPropArr, c2p2, pE1.first(), pE2.last());
-						//log.info("newp="+newp);
-						//log.info(""+lastNumProposal+","+dMuliPropArr+","+c2p2+","+newp+","+sec);
+						
 						if(newp!=0.0){
 							zUnit.setP(newp);
+							log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","+ pE2.last()+","
+									+newp+","+runingProtocol+","+"C3"+","+sec);
 							setp(d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), pE2.last(), newp);
 							if (runingProtocol!=ZabCT){
 								ZabCTIter++;
@@ -1123,28 +1127,33 @@ public class ZabCT extends Protocol {
 							}
 							return;
 						}else{
-							log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",B"+runingProtocol+","+sec);
+							//log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",B"+runingProtocol+","+sec);
+							//log.info(""+d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), pE2.last(), newp+runingProtocol+","+"C3"+","+sec);
+							log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","+ pE2.last()+","
+									+"Not Found="+newp+","+runingProtocol+","+"C4"+","+sec);
 							ZabCTIter=0;
 							if(runingProtocol==ZabCT && justSwitched!=Zab){
 								justSwitched=Zab;
 								swicthToZab();
 								log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-								log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
-										" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
+								//log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
+										//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
 							}
 							pE1.clear();
 							pE2.clear();
 							return;
 						}
 					}else{
-						log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",C"+runingProtocol+","+sec);
+						//log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",C"+runingProtocol+","+sec);
+						log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ (pE1.isEmpty()?0:pE1.first())+","+(pE2.isEmpty()?0:pE2.first())+","
+								+"Not Found=pE1ORpE2=0"+","+runingProtocol+","+"C5"+","+sec);
 						ZabCTIter=0;
 						if(runingProtocol==ZabCT && justSwitched!=Zab){
 							justSwitched=Zab;
 							swicthToZab();
 							log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-							log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
-									" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
+							//log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
+									//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
 						}
 						pE1.clear();
 						pE2.clear();
