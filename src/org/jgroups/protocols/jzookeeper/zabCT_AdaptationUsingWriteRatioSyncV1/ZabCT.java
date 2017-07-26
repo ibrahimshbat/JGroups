@@ -1052,7 +1052,7 @@ public class ZabCT extends Protocol {
 		private SortedSet<Double> pE1 = new TreeSet<Double>();
 		private SortedSet<Double> pE2 = new TreeSet<Double>();
 		private SortedSet<Double> intersection = new TreeSet<Double>();
-		private final static int ZABCTNOW = 3;
+		private final static int ZABCTNOW = 100;
 		private double newp;
 		private double justSwitched=2;
 		private int ZabCTIter=0; // This uses to switch to ZabCT after 3 subsequent switched request
