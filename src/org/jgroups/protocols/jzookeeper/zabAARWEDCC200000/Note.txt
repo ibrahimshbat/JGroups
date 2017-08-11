@@ -1,0 +1,1 @@
+It works without any problems for any N, tested for N=3 and 5 see EDCC New folder. It use Sync mode. Using 200000 Writes.
