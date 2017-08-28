@@ -1,0 +1,2 @@
+It works without any problem. The ZabInfinispan class use channel to send request to Servers.
+Also, each experment have W% from 10%-100%, ratio per 100000 requests. 
