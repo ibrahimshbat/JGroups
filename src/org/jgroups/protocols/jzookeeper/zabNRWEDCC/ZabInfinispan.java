@@ -65,10 +65,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	private String channelName;
 	private static PrintWriter outFile;
 	private AtomicInteger numClientsFinished = new AtomicInteger();
-	private boolean warmUp = true;
-	private static Random rand = new Random();
-	private static int min = 0, max = 0;
-	private static int LOAD = 200000;
+
 
 	// ============ configurable properties ==================
 	private boolean sync=true, oob=false, anycastRequests=true;
@@ -80,9 +77,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	private boolean random_destinations = false;
 	private boolean include_local_address = true; // Include local address in anycast count
 	private double read_percentage=0; // 80% reads, 20% writes
-	private long waitCC=0;// wait for client before starting
-	private long waitII =0;//wait for invoker before starting
-	private long waitSS =0;//wait before sending consecutive request
+	//private static AtomicInteger countReceive= new AtomicInteger();
 	// =======================================================
 
 	private static final Method[] METHODS=new Method[15];
@@ -124,6 +119,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			METHODS[GET_CONFIG]            = ZabInfinispan.class.getMethod("getConfig");
 			METHODS[STARTWARM]                 = ZabInfinispan.class.getMethod("startWarm");
 
+
 			ClassConfigurator.add((short)11000, Results.class);
 			f=NumberFormat.getNumberInstance();
 			f.setGroupingUsed(false);
@@ -140,8 +136,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			int totalNum_msgs, int totalPerThreads, int num_threads,
 			int msg_size, String outputDir, int numOfClients, int load,
 			int numsOfWarmUp, int timeout, boolean sync, String 
-			channelName, String initiator,int clusterSize, int rf, double read,
-			long waitCC, long waitII, long waitSS) throws Throwable {
+			channelName, String initiator,int clusterSize, int rf, double read) throws Throwable {
 		this.ProtocotName = protocolName;
 		this.propsFile = props;
 		this.num_msgs = totalNum_msgs;
@@ -159,11 +154,6 @@ public class ZabInfinispan extends ReceiverAdapter {
 		this.anycast_count = rf;
 		this.clusterSize = clusterSize;
 		this.read_percentage = read;
-		this.waitCC= waitCC;
-		this.waitII = waitII;
-		this.waitSS = waitSS;
-		this.min = (int) waitSS - ((int) (waitSS * 0.25));
-		this.max = (int) waitSS + ((int) (waitSS * 0.25));
 		channel=new JChannel(propsFile);
 		System.out.println("this.ProtocotName := " + this.ProtocotName+ " propsFile :="+propsFile+
 				"this.num_threads "+this.num_threads + " outdir := "+outputDir);
@@ -203,6 +193,20 @@ public class ZabInfinispan extends ReceiverAdapter {
 		if(disp != null)
 			disp.stop();
 		Util.close(channel);
+	}
+
+	private Address pickCoordinator() {
+		if (boxMembers == null) {
+			System.out.println("Box Members is null");
+			return members.get(0);
+		}
+		for (Address address : members) {
+			for (String boxName : boxMembers) {
+				if (!address.toString().contains(boxName))
+					return address;
+			}
+		}
+		return null;
 	}
 
 	public void viewAccepted(View new_view) {
@@ -277,7 +281,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		Invoker[] invokers=new Invoker[num_threads];
 		// create sender (threads) to send writes to /_1/_2
 		for(int i=0; i < invokers.length; i++){
-			invokers[i]=new Invoker(nonBoxMembers,  (numsOfWarmUp/numOfClients), num_msgs_sent, random, 0.0, true);
+			invokers[i]=new Invoker(nonBoxMembers, (numsOfWarmUp/numOfClients), num_msgs_sent, random, 0.0, true);
 			System.out.println("Create Invoker --------------->>>> " + i);
 
 		}
@@ -298,9 +302,8 @@ public class ZabInfinispan extends ReceiverAdapter {
 	}
 
 	public Results startTest() throws Throwable {
-		//Thread.sleep((long)(rand.nextInt((int)waitCC) + 1));
 		addSiteMastersToMembers();
-		warmUp = false;
+
 		System.out.println("invoking " + num_msgs + " RPCs of " + Util.printBytes(msg_size) +
 				", sync=" + sync + ", oob=" + oob + ", use_anycast_addrs=" + use_anycast_addrs);
 		int total_gets=0, total_puts=0;
@@ -313,15 +316,14 @@ public class ZabInfinispan extends ReceiverAdapter {
 		Invoker[] invokers=new Invoker[num_threads];
 		// create sender (threads) to send writes to /_1/_2
 		for(int i=0; i < invokers.length; i++){
-			invokers[i]=new Invoker(nonBoxMembers, (LOAD/numOfClients), num_msgs_sent, random, read_percentage, false);
+			invokers[i]=new Invoker(nonBoxMembers, (num_msgs/numOfClients), num_msgs_sent, random, read_percentage, false);
 			System.out.println("Create Invoker --------------->>>> " + i);
 		}
 
 		long start=System.currentTimeMillis();
-		for(Invoker invoker: invokers){
-			//Thread.sleep((long)(rand.nextInt((int)waitII) + 1));
+		for(Invoker invoker: invokers)
 			invoker.start();
-		}
+
 		for(Invoker invoker: invokers) {
 			invoker.join();
 			total_gets+=invoker.numGets();
@@ -385,8 +387,8 @@ public class ZabInfinispan extends ReceiverAdapter {
 	 * Write method, this will invoke as soon as write gets order by ording protocol
 	 * we just simulate Infinispan key-value store, so using put for write, get for read
 	 */
-	public void put(long key, byte[] val) {
-		//System.out.println("Inside -----------> PUT method************** "+key);
+	public synchronized void put(long key, byte[] val) {
+		//System.out.println("countReceive="+countReceive.incrementAndGet());
 	}
 
 	public ConfigOptions getConfig() {
@@ -444,7 +446,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 		System.out.println("after sending rpc for WarmUp");
 
 		sendStartNotify();
-		Thread.sleep(50);
+		Thread.sleep(30);
 
 		responses=disp.callRemoteMethods(dest, new MethodCall(START), options);
 		System.out.println("after sending rpc real test");
@@ -555,7 +557,6 @@ public class ZabInfinispan extends ReceiverAdapter {
 		ZabHeader hdrReq = new ZabHeader(ZabHeader.FINISHED);
 		Message finishedMessage = new Message().putHeader((short) 78, hdrReq);
 		finishedMessage.setFlag(Message.Flag.DONT_BUNDLE);
-		System.out.println("Send Finish Message");
 
 		for (Address address : box) {
 			Message cpy = finishedMessage.copy();
@@ -571,6 +572,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	}
 
 	public void sendStartNotify(){
+		//countReceive.set(0);
 		ZabHeader hdrReq = new ZabHeader(ZabHeader.STARTWORKLOAD);
 		Message startedMessage = new Message().putHeader((short) 78, hdrReq);
 		startedMessage.setFlag(Message.Flag.DONT_BUNDLE);
@@ -587,6 +589,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			}
 		}
 	}
+
 	//Sender to send write RPC, for testing ording protocol 
 	private class Invoker extends Thread {
 		private final List<Address>  dests=new ArrayList<Address>();
@@ -603,19 +606,11 @@ public class ZabInfinispan extends ReceiverAdapter {
 				AtomicInteger num_msgs_sent, Random random, double read_per, boolean isWarm) {
 			this.num_msgs_sent=num_msgs_sent;
 			this.dests.addAll(dests);
-			//this.num_msgs_to_send=num_msgs_to_send;
+			this.num_msgs_to_send=num_msgs_to_send;
 			System.out.println(" ***********num_msgs_to_send "+num_msgs_to_send);;
 			this.random = random;
 			this.read_per = read_per;
 			this.warmStage = isWarm;
-			if(!this.warmStage){
-				this.num_msgs_to_send= (int) ((double) num_msgs_to_send/(1.0 - this.read_per));
-				//this.num_msgs_to_send += this.num_msgs_to_send +1000;
-				System.out.println("Load is=="+this.num_msgs_to_send);
-			}
-			else{
-				this.num_msgs_to_send= num_msgs_to_send;
-			}
 			setName("Invoker-" + COUNTER.getAndIncrement());
 		}
 
@@ -631,7 +626,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			MethodCall get_call=new MethodCall(GET, get_args);
 			MethodCall put_call=new MethodCall(PUT, put_args);
 			RequestOptions get_options=new RequestOptions(ResponseMode.GET_ALL, timeout, true, null);
-			RequestOptions put_options=new RequestOptions(sync ? ResponseMode.GET_ALL : ResponseMode.GET_NONE, timeout, true, null);
+			RequestOptions put_options=new RequestOptions(sync ? ResponseMode.GET_ALL: ResponseMode.GET_NONE, timeout, true, null);
 
 			// Don't use bundling as we have sync requests (e.g. GETs) regardless of whether we set sync=true or false
 			get_options.setFlags(Message.Flag.DONT_BUNDLE);
@@ -650,31 +645,17 @@ public class ZabInfinispan extends ReceiverAdapter {
 				get_options.useAnycastAddresses(true);;
 				put_options.useAnycastAddresses(true);
 			}
-			long sendTime = 0;
+			//int count =0;
 			while(true) {
+				//count++;
 				long i=num_msgs_sent.getAndIncrement();
 				if(i >= num_msgs_to_send){
 					System.out.println(" *********** Name "+this.getName() + " Finished=: " + i);;
 					//if(numClientsFinished.incrementAndGet()==num_threads)
 					break;
 				}
-
-
 				boolean get=Util.tossWeightedCoin(read_per);
 				//System.out.println(" is it get? "+get);
-				
-				//if(!this.warmStage){
-//					//long startT = System.currentTimeMillis(); 
-					//try {
-						//Thread.sleep(50);
-					//} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-						//e.printStackTrace();
-				//	}
-//					//long endT = System.currentTimeMillis();
-//					//System.out.println("Wait="+(endT-startT));
-				//}
-//				
 				try {
 					if(get) { // sync GET
 						//System.out.println(" **** GET ****");
@@ -694,9 +675,10 @@ public class ZabInfinispan extends ReceiverAdapter {
 						}				
 						Collection<Address> targets = pickLocalTarget(); 
 						put_args[0]=i;
-						RspList rspW = disp.callRemoteMethods(targets, put_call, put_options);
+						//put_options.setMode(ResponseMode.GET_NONE);
+						RspList rsp = disp.callRemoteMethods(targets, put_call, put_options);
+						//System.out.println(this.getName() + " Send Req#=" + count);;
 						num_puts++;
-
 
 					}
 				}
@@ -941,6 +923,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	}
 
 
+
 	public static void main(String[] args) {
 		String propsFile = "conf/.xml";
 		String name ="";
@@ -961,7 +944,6 @@ public class ZabInfinispan extends ReceiverAdapter {
 		int rf=0;
 		int cSize = 10;
 		double read =0.0;
-		long waitcc=0, waitii=0, waitss=0;
 
 
 
@@ -1044,18 +1026,6 @@ public class ZabInfinispan extends ReceiverAdapter {
 				read = Double.parseDouble(args[++i]);
 				continue;
 			}
-			if("-waitC".equals(args[i])) {
-				waitcc = (long) Integer.parseInt(args[++i]);
-				continue;
-			}
-			if("-waitIn".equals(args[i])) {
-				waitii = (long) Integer.parseInt(args[++i]);
-				continue;
-			}
-			if("-waitSS".equals(args[i])) {
-				waitss =  (long) Integer.parseInt(args[++i]);
-				continue;
-			}
 
 		}
 
@@ -1065,7 +1035,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 			test.init(members, name, propsFile, totalMessages,
 					numberOfMessages, numsThreads, msgSize, 
 					outputDir, numOfClients, load, numWarmUp, timeout
-					, sync, channelName, initiator, cSize, rf, read, waitcc, waitii, waitss);
+					, sync, channelName, initiator, cSize, rf, read);
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

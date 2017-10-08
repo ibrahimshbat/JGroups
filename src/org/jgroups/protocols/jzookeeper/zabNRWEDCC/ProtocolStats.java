@@ -176,15 +176,15 @@ public class ProtocolStats {
 				//this.outRRTime = new PrintWriter(new BufferedWriter(
 						//new FileWriter(outDir +InetAddress.getLocalHost().getHostName()+ "recievedRT.csv", true)));
 				this.outFileAllLat = new PrintWriter(new BufferedWriter(
-						new FileWriter(outDir+ "Adaptation/"+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "All.csv", true)));
+						new FileWriter(outDir+  dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "All.csv", true)));
 				this.outFileWrite = new PrintWriter(new BufferedWriter(
-						new FileWriter(outDir+ "Adaptation/"+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "WW.csv", true)));
+						new FileWriter(outDir+  dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "WW.csv", true)));
 				this.outFileRead = new PrintWriter(new BufferedWriter(
-						new FileWriter(outDir+ "Adaptation/"+ dirTestType+"/" +InetAddress.getLocalHost().getHostName()+ protocolName +  "RR.csv", true)));
+						new FileWriter(outDir+  dirTestType+"/" +InetAddress.getLocalHost().getHostName()+ protocolName +  "RR.csv", true)));
 				this.outThroughput = new PrintWriter(new BufferedWriter(
-						new FileWriter(outDir+ "Adaptation/"+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "Throughput.csv", true)));
+						new FileWriter(outDir+  dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "Throughput.csv", true)));
 				this.outCommit = new PrintWriter(new BufferedWriter(
-						new FileWriter(outDir+ "Adaptation/"+ dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "Commit.csv", true)));
+						new FileWriter(outDir+  dirTestType+"/" + InetAddress.getLocalHost().getHostName()+ protocolName +  "Commit.csv", true)));
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
