@@ -1,3 +1,4 @@
-It uses new Computing the Coin’s Probability (See EPEW++ Document). The algortim says that if p1*<=p2* choose 
-p as (Theta/n * 1/lamada) - 0.001. If p1*>p2* choose p as repeating p=p1-delta until p is found. However,
-recenlty, we change algorithm by ignroing optimal probabilies and use {0.05,0.1,0.15,0.2,...,1.0} see pcakabge SyncV2. 
+It uses new Computing the Coin’s Probability. The algortim says that if p1*<=p2* choose 
+p as (Theta/n * 1/lamada) - 0.001. If p1*>p2* choose p as (Theta/n * 1/lamada) or repeating p=(Theta/n * 1/lamada)-0.001 until p is found. However,
+we change algorithm by ignroing optimal probabilies and use {0.05,0.1,0.15,0.2,...,1.0}. For example, if p1*=0.5 and E2 = 0.47, then repeating p=(Theta/n * 1/lamada)-0.001 
+should research for p betwen E2 and 0.46. This experimint we called Upper bound expereient.

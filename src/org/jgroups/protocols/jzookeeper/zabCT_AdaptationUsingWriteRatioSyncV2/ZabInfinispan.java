@@ -57,7 +57,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 	protected final List<Address>  site_masters=new ArrayList<Address>();
 	private List<String> boxMembers  = new ArrayList<String>();
 	private List<Address> box = new ArrayList<Address>();
-	private int clusterSize = 3;
+	private int clusterSize = 5;
 	private AtomicLong localSequence = new AtomicLong();
 	private String outputDir;
 	private View view;
@@ -759,7 +759,7 @@ public class ZabInfinispan extends ReceiverAdapter {
 				//if(!this.warmStage){
 					//long startT = System.currentTimeMillis(); 
 					//try {
-						//Thread.sleep(50);
+					//	Thread.sleep(50);
 					//} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						//e.printStackTrace();

@@ -209,7 +209,7 @@ public class ZabCT extends Protocol {
 			//theta = (int) THETA_N9;
 		}
 		//zUnit.setP(p_warmup);
-		this.pW=this.stats.findpW(N, zabMembers.size());
+		this.pW=this.stats.findwps(N, 0);
 		//this.pW.remove(0.0835);
 		log.info("pW====="+this.pW);
 
@@ -303,8 +303,8 @@ public class ZabCT extends Protocol {
 				sendACK(msg, hdr);
 				break;          		
 			case ZabCTHeader.ZABACK:
-				processACKForZab(msg);
 				stats.countAckMessage.incrementAndGet();
+				processACKForZab(msg);
 				break;
 			case ZabCTHeader.ZABCTACK:
 				stats.countAckMessage.incrementAndGet();
@@ -1052,7 +1052,7 @@ public class ZabCT extends Protocol {
 		private SortedSet<Double> pE1 = new TreeSet<Double>();
 		private SortedSet<Double> pE2 = new TreeSet<Double>();
 		private SortedSet<Double> intersection = new TreeSet<Double>();
-		private final static int ZABCTNOW = 100;
+		private final static int ZABCTNOW = 2;
 		private double newp;
 		private double justSwitched=2;
 		private int ZabCTIter=0; // This uses to switch to ZabCT after 3 subsequent switched request
@@ -1079,24 +1079,17 @@ public class ZabCT extends Protocol {
 				c2p2 = findCondtion2Part2(lastNumProposal);
 				c2p2= Double.parseDouble(roundValue.format(c2p2));
 				dMuliPropArr = Double.parseDouble(roundValue.format(d*(Math.max(lastNumProposal,((double) 1/D)))));
+
 				for (double p: copypW.keySet()){
 					if(copypW.get(p)<dMuliPropArr){
 						pE1.add(p);
 					}
-					if(p<c2p2){
-						pE2.add(p);
-					}
 				}
-				for(double val:pE1){
-					if(pE2.contains(val))
-						intersection.add(val);
-				}
-
-				if (!intersection.isEmpty()){
+				if (!pE1.isEmpty() && pE1.first()<=c2p2) {
 					zUnit.setP((c2p2-0.001));
-					log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","+ pE2.last()+","
-							+(c2p2-0.001)+","+runingProtocol+","+"C1"+","+sec);
-					setp(d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), pE2.last(), (c2p2-0.001));
+					//log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","
+							//+(c2p2-0.001)+","+runingProtocol+","+"C1"+","+sec);
+					setp(d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), (c2p2-0.001));
 					if (runingProtocol!=ZabCT){
 						ZabCTIter++;
 						if(ZabCTIter==ZABCTNOW){
@@ -1106,18 +1099,16 @@ public class ZabCT extends Protocol {
 					}
 					return;
 				}
-				else { //This means P1*>P2* OR may pE1 or pE2 is empty
-					
-					if(!pE1.isEmpty() && !pE2.isEmpty()){
-						log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","+ pE2.last()+","
-								+"Not Yet"+","+runingProtocol+","+"C2"+","+sec);
-						newp = stats.findp(c, n, dMuliPropArr, c2p2, pE1.first(), pE2.last());
-						
+				else { 
+					if(!pE1.isEmpty()){
+						//log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","
+								//+"Not Yet"+","+runingProtocol+","+"C2"+","+sec);
+						newp = stats.findp(c, N, dMuliPropArr, c2p2, pE1.first());
 						if(newp!=0.0){
 							zUnit.setP(newp);
-							log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","+ pE2.last()+","
-									+newp+","+runingProtocol+","+"C3"+","+sec);
-							setp(d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), pE2.last(), newp);
+							//log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","
+									//+newp+","+runingProtocol+","+"C3"+","+sec);
+							setp(d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), newp);
 							if (runingProtocol!=ZabCT){
 								ZabCTIter++;
 								if(ZabCTIter==ZABCTNOW){
@@ -1129,15 +1120,15 @@ public class ZabCT extends Protocol {
 						}else{
 							//log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",B"+runingProtocol+","+sec);
 							//log.info(""+d, lastNumProposal, dMuliPropArr, c2p2, pE1.first(), pE2.last(), newp+runingProtocol+","+"C3"+","+sec);
-							log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","+ pE2.last()+","
-									+"Not Found="+newp+","+runingProtocol+","+"C4"+","+sec);
+							//log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ pE1.first()+","
+									//+"Not Found="+newp+","+runingProtocol+","+"C4"+","+sec);
 							ZabCTIter=0;
 							if(runingProtocol==ZabCT && justSwitched!=Zab){
 								justSwitched=Zab;
 								swicthToZab();
 								log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 								//log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
-										//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
+								//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
 							}
 							pE1.clear();
 							pE2.clear();
@@ -1145,15 +1136,15 @@ public class ZabCT extends Protocol {
 						}
 					}else{
 						//log.info(""+d+","+theta+","+lastNumProposal+","+dMuliPropArr+","+c2p2+",C"+runingProtocol+","+sec);
-						log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ (pE1.isEmpty()?0:pE1.first())+","+(pE2.isEmpty()?0:pE2.first())+","
-								+"Not Found=pE1ORpE2=0"+","+runingProtocol+","+"C5"+","+sec);
+						//log.info(""+d+","+ lastNumProposal+","+ dMuliPropArr+","+ c2p2+","+ (pE1.isEmpty()?0:pE1.first())+","+(pE2.isEmpty()?0:pE2.first())+","
+								//+"Not Found=pE1ORpE2=0"+","+runingProtocol+","+"C5"+","+sec);
 						ZabCTIter=0;
 						if(runingProtocol==ZabCT && justSwitched!=Zab){
 							justSwitched=Zab;
 							swicthToZab();
 							log.info("Must Change to Zab  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 							//log.info("ArrivalRate=:"+lastNumProposal+" /d*Lambda=:"+dMuliPropArr+
-									//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
+							//" /(Theta/n * 1/Lambda)=:"+c2p2+" /p=: not found");
 						}
 						pE1.clear();
 						pE2.clear();
@@ -1163,11 +1154,11 @@ public class ZabCT extends Protocol {
 			}
 
 		}
-		public void setp(double dd, int lamda, double eq1, double eq2, double p1star, double p2star, double pp){
+		public void setp(double dd, int lamda, double eq1, double eq2, double p1star, double pp){
 			//final Entry<Double, Double> largeKey = copypW.lastEntry();
 			//zUnit.setP(largeKey.getKey());
 			//zUnit.setP(intersection.last());
-			stats.addResult(""+dd+","+lamda+","+eq1+","+eq2+","+p1star+","+p2star+","+pp+","+runingProtocol+","+(++sec));
+			stats.addResult(""+dd+","+lamda+","+eq1+","+eq2+","+p1star+","+pp+","+runingProtocol+","+(++sec));
 			//log.info(""+dd+","+lamda+","+theta+","+eq1+","+eq2+","+p1star+","+p2star+","+pp+","+runingProtocol+","+(++sec));
 			//log.info("intersection values="+intersection);
 			//log.info("p value="+pp);

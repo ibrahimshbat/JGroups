@@ -321,113 +321,43 @@ public class ProtocolStats {
 		this.countTotalMessagesFollowers.addAndGet(countTotalMessages);
 	}
 
-	public TreeMap<Double,Double> findpW(int N, int currentServers){
-		TreeMap<Double, Double> pW = new TreeMap<Double, Double>();
-		SortedSet<Double> ps = new TreeSet<Double>();
-		int c=N-currentServers;
-		N=N-c;
-		int n = N-1;
-		List<RangeHead> rangeHeads = findRageHead(N, c, n);
-		ps= findpForRangeHead(rangeHeads, c, n);
-		for(double p:ps){
-			pW.put(p, findWForRangep(p, N, c));
-		}
-		return pW;
 
-	}
-
-	public List<RangeHead> findRageHead(int N, int c, int n){
-		List<RangeHead> rHeads = new ArrayList<RangeHead>();
-		RangeHead rh;
-		for (int i = 1; i < n; i++) {
-			for (int j = i; j <n; j++) {
-				rh = new RangeHead(i,j);
-				rHeads.add(rh);
-			}
-		}
-		return rHeads;
-	}
-
-	public static SortedSet<Double> findpForRangeHead(List<RangeHead> rangeHeads, int c, int n){
+	public TreeMap<Double,Double> findwps(int N, int c){
 		DecimalFormat roundValue = new DecimalFormat("#.000");
-		double term1=1,p=0;
-		SortedSet<Double> ps = new TreeSet<Double>();
-		for (RangeHead rangeHead : rangeHeads) {
-			term1=1;
-			for (int j = 0; j <= rangeHead.getB(); j++) {
-				term1*= ((double)((n-rangeHead.getAlpha())-j)) / ((double)(rangeHead.getAlpha()+j));				
-			}
-			term1=1+Math.pow(term1, ((double)1/((double) rangeHead.getB()+1)));
-			p = ((double)1) / ((double) term1);
-			p= Double.parseDouble(roundValue.format(p));
-			ps.add(p);
-		}
-		//Get more p values
-		double newp=0.0;
-		ArrayList<Double> copyps = new ArrayList<Double>(ps);
-		if(n==2 && c==0){
-			ps.add(0.125);
-			ps.add(0.25);
-			ps.add(0.75);
-			ps.add(0.800);
-		}
-		double fristp=((double)copyps.get(0))/2;
-		ps.add(fristp);
-		for(int i=0;i<copyps.size()-1;i++){
-			newp=((double) copyps.get(i)+copyps.get(i+1))/2;
-			ps.add((Double.parseDouble(roundValue.format(newp))));
-		}
-		if (n==6){
-			ps.add(0.148);
-			ps.add(0.130);
-		}
+		TreeMap<Double, Double> pw = new TreeMap<Double, Double>();
 
-		return ps;
+		for (double i = 1; i >= 0.05; i-=0.05) {
+			//System.out.println(i);
+			i = Double.parseDouble(roundValue.format(i));
+			pw.put(i,findWForRangep(i,N,c));
+		}
+		return pw;
+
 	}
 
-	public double findExtrap(int c, int n, double c1, double c2, double lastP){
-		boolean found = false;
+	public double findp(int c, int N, double dlamda, double equ2, double p1star){
+		final double ABS = 0.001;
 		DecimalFormat roundValue = new DecimalFormat("#.000");
-		double p=0.0, w=0.0;
-		p=lastP;
-		while(p<=0.995){
-			p= p+ 0.005;
-			p=Double.parseDouble(roundValue.format(p));
-			w = findWForRangep(p, n+1, c);
-			if (p>=c2 || w>=c1){	
-				extrapW.put(p, w);
-			}
-			else{
-				extrapW.put(p, w);
-				found = true;
-				break;
-			}
-		}
-		if (found)
-			return p;
-		else
-			return 0.0;
-	}
-	// This method used by old computing p algorithm
-	public double findp(int c, int n, double c1, double c2, double P1, double P2){
-		final double ABS = 0.005;
-		DecimalFormat roundValue = new DecimalFormat("#.000");
-		double newp=P1-ABS, newW=0.0, p=0.000;
-		while(newp>=P2){
+		double newp=equ2, newW=0.0, p=0.000, upto=p1star-0.05;
+		boolean start =true;
+		while(start && newp>upto){
 			newp=Double.parseDouble(roundValue.format(newp));
-			newW = findWForRangep(newp, n+1, c);
-			log.info("W(P)="+newW+" P="+newp);
 
-			if (newp<=c2 && newW<=c1){	
+			newW = findWForRangep(newp, N, c);
+			System.out.println("W(P)="+newW+" P="+newp);
+			if (newW<dlamda){	
 				p=newp;
-				break;
+				newp= newp - ABS;
 			}
-			newp= newp- 0.005;
-			//System.out.println("check newp="+newp);
+			else
+				start=false;
+
+			//System.out.println(st.findWForRangep(c2, n+1, c);
 			//log.info("check newp="+newp);
 		}
 		return p;
 	}
+
 
 	public double findWForRangep(double p, int N, int c){
 		DecimalFormat roundValue = new DecimalFormat("#.000");
@@ -527,9 +457,9 @@ public class ProtocolStats {
 				q11=Math.pow((1-p), 2);
 				q12=(2*p) * (1-p);
 				q22=(1-p);
-				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
-						+ (((double) q01*q12)/(double) (1-q00) * (1-q11) * (1-q22)) 
-						+ (((double) q02)/(double) (1-q00) * (1-q22)) ;
+				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11))) 
+						+ (((double) q01*q12)/((double) (1-q00) * (1-q11) * (1-q22))) 
+						+ (((double) q02)/((double) (1-q00) * (1-q22))) ;
 				W= Double.parseDouble(roundValue.format(W));
 				break;
 			}
@@ -549,10 +479,10 @@ public class ProtocolStats {
 				q22=Math.pow((1-p), 6);
 				q23=(6*p) * (Math.pow((1-p), 5));
 				q33=Math.pow((1-p), 5);
-				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11))) 
 						+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 						+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
-						+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+						+ (((double) q02)/((double) (1-q00) * (1-q22))) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
 						+ (((double) q03)/((double) ((1-q00) * (1-q33))));
 				W= Double.parseDouble(roundValue.format(W));
 				break;
@@ -567,10 +497,10 @@ public class ProtocolStats {
 				q22=Math.pow((1-p), 5);
 				q23=(5*p) * (Math.pow((1-p), 4));
 				q33=Math.pow((1-p), 4);
-				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11)))
 						+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 						+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
-						+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+						+ (((double) q02)/((double) (1-q00) * (1-q22))) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
 						+ (((double) q03)/((double) ((1-q00) * (1-q33))));
 				W= Double.parseDouble(roundValue.format(W));
 				break;
@@ -585,10 +515,10 @@ public class ProtocolStats {
 				q22=Math.pow((1-p), 4);
 				q23=(4*p) * (Math.pow((1-p), 3));
 				q33=Math.pow((1-p), 3);
-				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11)))
 						+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 						+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
-						+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+						+ (((double) q02)/((double) (1-q00) * (1-q22))) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
 						+ (((double) q03)/((double) ((1-q00) * (1-q33))));
 				W= Double.parseDouble(roundValue.format(W));
 				break;
@@ -603,10 +533,10 @@ public class ProtocolStats {
 				q22=Math.pow((1-p), 3);
 				q23=(3*p) * (Math.pow((1-p), 2));
 				q33=Math.pow((1-p), 2);
-				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+				W = (((double) q00)/((double) (1-q00)) + ((double) q01)/((double) (1-q00) * (1-q11)))
 						+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 						+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
-						+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+						+ (((double) q02)/((double) (1-q00) * (1-q22))) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
 						+ (((double) q03)/((double) ((1-q00) * (1-q33))));
 				W= Double.parseDouble(roundValue.format(W));
 				break;
@@ -621,10 +551,10 @@ public class ProtocolStats {
 				q22=Math.pow((1-p), 2);
 				q23=(2*p) * (1-p);
 				q33=1-p;
-				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/(double) (1-q00) * (1-q11)) 
+				W = (((double) q00)/(double) (1-q00)) + (((double) q01)/((double) (1-q00) * (1-q11)))
 						+ (((double) q01*q12)/((double) ((1-q00) * (1-q11) * (1-q22))))
 						+ (((double) q01*q12*q13)/((double) ((1-q00) * (1-q11) * (1-q22) * (1-q33))))
-						+ (((double) q02)/(double) (1-q00) * (1-q22)) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
+						+ (((double) q02)/((double) (1-q00) * (1-q22))) + (((double) q02*q23)/((double) ((1-q00) * (1-q22) * (1-q33))))
 						+ (((double) q03)/((double) ((1-q00) * (1-q33))));
 				W= Double.parseDouble(roundValue.format(W));
 				break;
