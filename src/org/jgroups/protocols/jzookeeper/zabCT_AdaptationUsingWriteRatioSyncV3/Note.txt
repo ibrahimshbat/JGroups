@@ -1,0 +1,8 @@
+It uses new Computing the Coin’s Probability. The algortim says:
+1- pm=min(P2,P1u)
+2- find P1 which smallest value satsfied Equ1
+3- if P1<=P2 ---> choose P1 as coin toss porb
+else
+switch to Zab
+ 
+ This experimint we called Lower bound expereient.
