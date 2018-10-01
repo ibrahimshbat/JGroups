@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "./zabjgroups" | at 15:57
+echo "./kill" | at 16:15
+exit

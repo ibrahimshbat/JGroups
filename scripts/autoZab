@@ -1,0 +1,1247 @@
+#!/bin/bash 
+#echo './kill' | at 01:37
+#echo './zabrpc 0.0' | at 07:54
+#echo './kill' | at 08:02
+#echo './zabrpc 0.0' | at 08:03
+#echo './kill' | at 01:52
+#echo './zabrpc 0.2' | at 01:53
+#echo './kill' | at 01:58
+#echo './zabrpc 0.3' | at 01:59
+#echo './kill' | at 02:00
+#echo './zabrpc 0.3' | at 02:01
+#echo './kill' | at 02:06
+#echo './zabrpc 0.4' | at 02:07
+#echo './kill' | at 02:13
+#echo './zabrpc 0.4' | at 02:14
+#echo './kill' | at 02:20
+#echo './zabrpc 0.5' | at 02:21
+#echo './kill' | at 02:26
+#echo './zabrpc 0.5' | at 02:27
+#echo './kill' | at 02:33
+#echo './zabrpc 0.6' | at 02:34
+#echo './kill' | at 02:40
+#echo './zabrpc 0.6' | at 02:41
+#echo './kill' | at 02:46
+#echo './zabrpc 0.7' | at 02:47
+#echo './kill' | at 02:53
+#echo './zabrpc 0.7' | at 02:54
+#echo './kill' | at 02:59
+#echo './zabrpc 0.8' | at 03:00
+#echo './kill' | at 03:33
+#echo './zabrpc 0.8' | at 03:34
+#echo './kill' | at 03:40
+#echo './zabrpc 0.8' | at 03:41
+#echo './kill' | at 03:46
+#echo './zabrpc 0.9' | at 03:47
+#echo './kill' | at 03:54
+#echo './zabrpc 0.9' | at 03:55
+#echo './kill' | at 04:02
+#echo './zabrpc 0.25' | at 04:03
+#echo './kill' | at 04:10
+#echo './zabrpc 0.25' | at 04:11
+#echo './kill' | at 04:20
+#echo './zabrpc 0.75' | at 04:21
+#echo './kill' | at 04:28
+#echo './zabrpc 0.75' | at 04:29
+#echo './kill' | at 04:40
+
+
+#echo './zabrpc 0.5' | at 06:47
+#echo './kill' | at 06:55
+#echo './zabrpc 0.6' | at 06:56
+#echo './kill' | at 07:05
+#echo './zabrpc 0.6' | at 07:06
+#echo './kill' | at 07:13
+#echo './zabrpc 0.6' | at 07:14
+#echo './kill' | at 07:22
+#echo './zabrpc 0.6' | at 07:23
+#echo './kill' | at 07:30
+#echo './zabrpc 0.7' | at 07:31
+#echo './kill' | at 07:38
+#echo './zabrpc 0.7' | at 07:39
+#echo './kill' | at 07:45
+#echo './zabrpc 0.7' | at 07:46
+#echo './kill' | at 07:53
+#echo './zabrpc 0.7' | at 07:54
+#echo './kill' | at 08:03
+#echo './zabrpc 0.8' | at 08:04
+#echo './kill' | at 08:13
+#echo './zabrpc 0.8' | at 08:14
+#echo './kill' | at 08:23
+#echo './zabrpc 0.8' | at 08:24
+#echo './kill' | at 08:32
+#echo './zabrpc 0.8' | at 08:33
+#echo './kill' | at 08:42
+#echo './zabrpc 0.9' | at 08:43
+#echo './kill' | at 08:52
+#echo './zabrpc 0.9' | at 08:53
+#echo './kill' | at 08:59
+#echo './zabrpc 0.9' | at 09:00
+#echo './kill' | at 09:10
+#echo './zabrpc 0.9' | at 09:11
+#echo './kill' | at 09:22
+#echo './zabrpc 0.25' | at 09:23
+#echo './kill' | at 09:33
+#echo './zabrpc 0.25' | at 09:34
+#echo './kill' | at 09:42
+#echo './zabrpc 0.25' | at 09:43
+#echo './kill' | at 09:52
+#echo './zabrpc 0.25' | at 09:53
+#echo './kill' | at 09:59
+#echo './zabrpc 0.75' | at 10:00
+#echo './kill' | at 10:10
+#echo './zabrpc 0.75' | at 10:11
+#echo './kill' | at 10:22
+#echo './zabrpc 0.75' | at 10:23
+#echo './kill' | at 10:33
+#echo './zabrpc 0.75' | at 10:34
+#echo './kill' | at 10:44#
+
+
+#echo './zabrpc 0.8' | at 09:00
+#echo './kill' | at 09:08
+#echo './zabrpc 0.8' | at 09:09
+#echo './kill' | at 09:15
+#echo './zabrpc 0.9' | at 09:16
+#echo './kill' | at 09:24
+#echo './zabrpc 0.9' | at 09:25
+#echo './kill' | at 09:33
+#echo './zabrpc 0.25' | at 09:34
+#echo './kill' | at 09:44
+#echo './zabrpc 0.25' | at 09:45
+#echo './kill' | at 09:52
+#echo './zabrpc 0.75' | at 09:53
+#echo './kill' | at 09:59
+#echo './zabrpc 0.75' | at 10:00
+#echo './kill' | at 10:10
+
+
+
+
+#echo './zabrpc 0.25' | at 03:16
+#echo './kill' | at 03:22
+#echo './zabrpc 0.25' | at 03:24
+#echo './kill' | at 03:35
+
+#echo './zabrpc 0.75' | at 03:37
+#echo './kill' | at 03:44
+#echo './zabrpc 0.75' | at 03:45
+#echo './kill' | at 03:57
+
+#echo './zabrpc 0.9' | at 05:11
+#echo './kill' | at 05:17
+#echo './zabrpc 0.9' | at 05:18
+#echo './kill' | at 05:24
+
+#echo './zabrpc 0.25' | at 05:25
+#echo './kill' | at 05:31
+#echo './zabrpc 0.25' | at 05:32
+#echo './kill' | at 05:40
+
+#echo './zabrpc 0.75' | at 05:41
+#echo './kill' | at 05:47
+#echo './zabrpc 0.75' | at 05:48
+#echo './kill' | at 05:55
+
+#echo './zabrpc 0.3' | at 18:41
+#echo './kill' | at 18:53
+#echo './zabrpc 0.3' | at 18:54
+#echo './kill' | at 19:07
+
+#echo './zabrpc 0.4' | at 19:08
+#echo './kill' | at 19:20
+#echo './zabrpc 0.4' | at 19:21
+#echo './kill' | at 19:34
+
+#echo './zabrpc 0.5' | at 19:35
+#echo './kill' | at 19:45
+#echo './zabrpc 0.5' | at 19:46
+#echo './kill' | at 19:55
+
+#echo './zabrpc 0.6' | at 19:56
+#echo './kill' | at 20:05
+#echo './zabrpc 0.6' | at 20:06
+#echo './kill' | at 20:15
+
+#echo './zabrpc 0.7' | at 20:16
+#echo './kill' | at 20:26
+#echo './zabrpc 0.7' | at 20:27
+#echo './kill' | at 20:37
+
+#echo './zabrpc 0.8' | at 20:38
+#echo './kill' | at 20:46
+#echo './zabrpc 0.8' | at 20:47
+#echo './kill' | at 20:53
+
+#echo './zabrpc 0.9' | at 20:54
+#echo './kill' | at 21:05
+#echo './zabrpc 0.9' | at 21:06
+#echo './kill' | at 21:16
+
+
+#echo './zabrpc 0.7' | at 15:42
+#echo './kill' | at 15:50
+#echo './zabrpc 0.7' | at 15:52
+#echo './kill' | at 16:02
+
+#echo './zabrpc 0.8' | at 16:04
+#echo './kill' | at 16:11
+
+#echo './zabrpc 0.5' | at 12:43
+#echo './kill' | at 12:49
+#echo './zabrpc 0.6' | at 21:50
+#echo './kill' | at 21:58
+
+#echo './zabrpc 0.6' | at 21:59
+#echo './kill' | at 22:06
+#echo './zabrpc 0.7' | at 22:07
+#echo './kill' | at 22:12
+
+#echo './zabrpc 0.7' | at 22:13
+#echo './kill' | at 22:19
+
+#echo './kill' | at 22:28
+#echo './zabrpc 0.0' | at 23:35
+#echo './kill' | at 23:14
+#echo './zabrpc 0.75' | at 23:05
+#echo './kill' | at 22:34
+
+#-----------------------------
+#echo './zabrpc 0.0' | at 23:20
+#echo './kill' | at 23:31
+#echo './zabrpc 0.0' | at 23:30
+#echo './kill' | at 23:45
+
+#echo './zabrpc 0.1' | at 23:44
+#echo './kill' | at 23:55
+#echo './zabrpc 0.1' | at 23:56
+#echo './kill' | at 00:08
+
+#echo './zabrpc 0.2' | at 00:09
+#echo './kill' | at 00:19
+#echo './zabrpc 0.2' | at 00:20
+#echo './kill' | at 00:34
+
+#echo './zabrpc 0.3' | at 00:35
+#echo './kill' | at 00:42
+#echo './zabrpc 0.3' | at 00:43
+#echo './kill' | at 00:52
+
+#echo './zabrpc 0.4' | at 00:53
+#echo './kill' | at 01:02
+#echo './zabrpc 0.4' | at 01:03
+#echo './kill' | at 01:10
+
+#echo './zabrpc 0.5' | at 01:11
+#echo './kill' | at 01:20
+#echo './zabrpc 0.5' | at 01:21
+#echo './kill' | at 01:30
+
+#echo './zabrpc 0.6' | at 01:31
+#echo './kill' | at 01:40
+#echo './zabrpc 0.6' | at 01:41
+#echo './kill' | at 01:50
+
+#echo './zabrpc 0.7' | at 01:52
+#echo './kill' | at 02:00
+#echo './zabrpc 0.7' | at 02:02
+#echo './kill' | at 02:10
+
+#echo './zabrpc 0.8' | at 02:12
+#echo './kill' | at 02:20
+#echo './zabrpc 0.8' | at 02:22
+#echo './kill' | at 02:30
+
+#echo './zabrpc 0.9' | at 02:35
+#echo './kill' | at 02:40
+#echo './zabrpc 0.9' | at 02:42
+#echo './kill' | at 02:50
+
+#echo './zabrpc 0.25' | at 02:52
+#echo './kill' | at 03:00
+#echo './zabrpc 0.25' | at 03:02
+#echo './kill' | at 03:10
+
+#echo './zabrpc 0.75' | at 03:12
+#echo './kill' | at 03:20
+#echo './zabrpc 0.75' | at 03:22
+#echo './kill' | at 03:30
+
+#echo './zabrpc 1.0' | at 03:32
+#echo './kill' | at 03:40
+#echo './zabrpc 1.0' | at 03:42
+#echo './kill' | at 03:50
+
+#echo './zabrpc 0.0' | at 03:51
+#echo './kill' | at 04:10
+#echo './zabrpc 0.0' | at 04:12
+#echo './kill' | at 04:25
+
+#echo './zabrpc 0.1' | at 04:26
+#echo './kill' | at 04:40
+#echo './zabrpc 0.1' | at 04:42
+#echo './kill' | at 04:58
+
+#echo './zabrpc 0.2' | at 05:09
+#echo './kill' | at 05:26
+#echo './zabrpc 0.2' | at 05:28
+#echo './kill' | at 05:43
+
+#echo './zabrpc 0.3' | at 05:45
+#echo './kill' | at 05:58
+#echo './zabrpc 0.3' | at 06:00
+#echo './kill' | at 06:14
+
+#echo './zabrpc 0.4' | at 06:16
+#echo './kill' | at 06:26
+#echo './zabrpc 0.4' | at 06:29
+#echo './kill' | at 06:39
+
+#echo './zabrpc 0.5' | at 06:40
+#echo './kill' | at 06:48
+#echo './zabrpc 0.5' | at 06:50
+#echo './kill' | at 06:58
+
+#echo './zabrpc 0.6' | at 07:00
+#echo './kill' | at 07:08
+#echo './zabrpc 0.6' | at 07:10
+#echo './kill' | at 07:18
+
+#echo './zabrpc 0.7' | at 07:20
+#echo './kill' | at 07:27
+#echo './zabrpc 0.7' | at 07:29
+#echo './kill' | at 07:37
+
+#echo './zabrpc 0.8' | at 07:39
+#echo './kill' | at 07:47
+#echo './zabrpc 0.8' | at 07:49
+#echo './kill' | at 07:58
+
+#echo './zabrpc 0.0' | at 14:55
+#echo './kill' | at 14:42
+#echo './kill' | at 14:20
+#echo './zabrpc 0.2' | at 14:21
+#echo './kill' | at 14:30
+
+
+#echo './kill' | at 13:25
+#echo './zabrpc 0.1' | at 13:26
+#echo './kill' | at 13:38
+#--------------------
+
+
+#echo './zabrpc 0.1' | at 07:15
+#echo './kill' | at 07:21
+#echo './zabrpc 0.1' | at 07:22
+#echo './kill' | at 07:30
+
+#echo './zabrpc 0.2' | at 07:31
+#echo './kill' | at 07:37
+#echo './zabrpc 0.2' | at 07:38
+#echo './kill' | at 07:44
+
+#echo './zabrpc 0.3' | at 07:45
+#echo './kill' | at 07:52
+#echo './zabrpc 0.3' | at 07:53
+#echo './kill' | at 07:59
+
+#echo './zabrpc 0.4' | at 00:00
+#echo './kill' | at 08:07
+#echo './zabrpc 0.4' | at 08:08
+#echo './kill' | at 08:16
+
+#echo './zabrpc 0.5' | at 08:17
+#echo './kill' | at 08:24
+#echo './zabrpc 0.5' | at 08:25
+#echo './kill' | at 08:32
+
+#echo './zabrpc 0.6' | at 08:33
+#echo './kill' | at 08:40
+#echo './zabrpc 0.6' | at 08:41
+#echo './kill' | at 08:50
+
+#echo './zabrpc 0.7' | at 08:51
+#echo './kill' | at 09:00
+#echo './zabrpc 0.7' | at 09:02
+#echo './kill' | at 09:10
+
+#echo './zabrpc 0.8' | at 09:12
+#echo './kill' | at 09:20
+#echo './zabrpc 0.8' | at 09:22
+#echo './kill' | at 09:30
+
+#echo './zabrpc 0.9' | at 09:32
+#echo './kill' | at 09:40
+#echo './zabrpc 0.9' | at 09:42
+#echo './kill' | at 09:50
+
+#echo './zabrpc 0.25' | at 09:51
+#echo './kill' | at 10:01
+#echo './zabrpc 0.25' | at 10:02
+#echo './kill' | at 10:11
+
+#echo './zabrpc 0.75' | at 10:13
+#echo './kill' | at 10:21
+#echo './zabrpc 0.75' | at 10:22
+#echo './kill' | at 10:31
+
+#echo './zabrpc 1.0' | at 10:32
+#echo './kill' | at 10:40
+#echo './zabrpc 1.0' | at 10:42
+#echo './kill' | at 10:50
+
+
+#echo './zabrpc 0.0' | at 13:00
+#echo './kill' | at 13:13
+
+#echo './zabrpc 0.1' | at 13:14
+#echo './kill' | at 13:25
+#echo './zabrpc 0.1' | at 13:26
+#echo './kill' | at 13:38
+
+#echo './zabrpc 0.2' | at 13:39
+#echo './kill' | at 13:42
+#echo './zabrpc 0.2' | at 13:43
+#echo './kill' | at 13:57
+
+#echo './zabrpc 0.3' | at 13:58
+#echo './kill' | at 14:10
+#echo './zabrpc 0.3' | at 14:11
+#echo './kill' | at 14:22
+
+#echo './zabrpc 0.4' | at 14:23
+#echo './kill' | at 14:30
+#echo './zabrpc 0.4' | at 14:31
+#echo './kill' | at 14:39
+
+#echo './zabrpc 0.5' | at 14:40
+#echo './kill' | at 14:47
+#echo './zabrpc 0.5' | at 14:48
+#echo './kill' | at 14:55
+
+#echo './zabrpc 0.6' | at 14:56
+#echo './kill' | at 15:02
+#echo './zabrpc 0.6' | at 15:03
+#echo './kill' | at 15:10
+
+#echo './zabrpc 0.7' | at 15:11
+#echo './kill' | at 15:18
+#echo './zabrpc 0.7' | at 15:19
+#echo './kill' | at 15:27
+
+#echo './zabrpc 0.8' | at 15:28
+#echo './kill' | at 15:35
+#echo './zabrpc 0.8' | at 15:36
+#echo './kill' | at 15:42
+
+#echo './zabrpc 0.9' | at 15:43
+#echo './kill' | at 15:47
+#echo './zabrpc 0.9' | at 15:48
+#echo './kill' | at 15:53
+
+#echo './zabrpc 0.25' | at 15:54
+#echo './kill' | at 16:05
+#echo './zabrpc 0.25' | at 16:06
+#echo './kill' | at 16:16
+
+#echo './zabrpc 0.75' | at 16:17
+#echo './kill' | at 16:26
+#echo './zabrpc 0.75' | at 16:27
+#echo './kill' | at 16:35
+
+#echo './zabrpc 1.0' | at 16:36
+#echo './kill' | at 16:40
+#echo './zabrpc 1.0' | at 16:42
+#echo './kill' | at 16:50
+
+#----------------Night-----------------------------
+
+#echo './zabrpc 0.0' | at 23:20
+#echo './kill' | at 23:33
+#echo './zabrpc 0.0' | at 23:37
+#echo './kill' | at 23:47
+
+
+#echo './zabrpc 0.1' | at 23:48
+#echo './kill' | at 23:59
+#echo './zabrpc 0.1' | at 00:00
+#echo './kill' | at 00:11
+
+#echo './zabrpc 0.2' | at 00:12
+#echo './kill' | at 00:22
+#echo './zabrpc 0.2' | at 00:24
+#echo './kill' | at 00:33
+
+#echo './zabrpc 0.3' | at 00:35
+#echo './kill' | at 00:42
+#echo './zabrpc 0.3' | at 00:44
+#echo './kill' | at 00:52
+
+#echo './zabrpc 0.4' | at 00:54
+#echo './kill' | at 01:02
+#echo './zabrpc 0.4' | at 01:04
+#echo './kill' | at 01:10
+
+#echo './zabrpc 0.5' | at 01:12
+#echo './kill' | at 01:20
+#echo './zabrpc 0.5' | at 01:22
+#echo './kill' | at 01:30
+
+#echo './zabrpc 0.6' | at 01:32
+#echo './kill' | at 01:40
+#echo './zabrpc 0.6' | at 01:42
+#echo './kill' | at 01:50
+
+#echo './zabrpc 0.7' | at 01:52
+#echo './kill' | at 02:00
+#echo './zabrpc 0.7' | at 02:02
+#echo './kill' | at 02:10
+
+#echo './zabrpc 0.8' | at 02:12
+#echo './kill' | at 02:20
+#echo './zabrpc 0.8' | at 02:22
+#echo './kill' | at 02:30
+
+#echo './zabrpc 0.9' | at 02:32
+#echo './kill' | at 02:40
+#echo './zabrpc 0.9' | at 02:42
+#echo './kill' | at 02:50
+
+#echo './zabrpc 0.25' | at 02:52
+#echo './kill' | at 03:00
+#echo './zabrpc 0.25' | at 03:02
+#echo './kill' | at 03:10
+
+#echo './zabrpc 0.75' | at 03:12
+#echo './kill' | at 03:20
+#echo './zabrpc 0.75' | at 03:22
+#echo './kill' | at 03:30
+
+#echo './zabrpc 0.75' | at 03:32
+#echo './kill' | at 03:40
+#echo './zabrpc 0.75' | at 03:42
+#echo './kill' | at 03:50
+
+
+
+
+#echo './zabrpc 0.8' | at 17:51
+#echo './kill' | at 17:57
+#echo './zabrpc 0.9' | at 17:41
+#echo './kill' | at 18:07
+#echo './zabrpc 0.0' | at 00:10
+#echo './kill' | at 22:32
+#echo './zabrpc 0.6' | at 22:34
+#echo './kill' | at 18:25
+#echo './zabrpc 0.75' | at 18:27
+#echo './kill' | at 18:35
+#--------Evening
+
+
+#echo './zabrpc 0.0' | at 00:47
+#echo './kill' | at 01:03
+#echo './zabrpc 0.0' | at 01:05
+#echo './kill' | at 01:20
+
+
+#echo './kill' | at 21:40
+#echo './zabrpc 0.0' | at 23:23
+#echo './kill' | at 22:46
+#echo './zabrpc 0.25' | at 22:47
+#echo './kill' | at 22:49
+#echo './zabrpc 0.5' | at 22:52
+#echo './kill' | at 22:59
+#echo './zabrpc 0.2' | at 14:41
+#echo './kill' | at 14:54
+#echo './zabrpc 0.2' | at 14:56
+#echo './kill' | at 15:06
+#echo './zabrpc 0.4' | at 15:08
+#echo './kill' | at 15:16
+#echo './zabrpc 0.5' | at 15:18
+#echo './kill' | at 15:30
+#echo './zabrpc 0.5' | at 15:32
+#echo './kill' | at 15:40
+#echo './zabrpc 0.9' | at 15:42
+#echo './kill' | at 15:50
+#echo './zabrpc 0.1' | at 01:45
+#echo './kill' | at 15:56
+#echo './zabrpc 0.1' | at 01:57
+#echo './kill' | at 02:10
+
+#echo './zabrpc 0.2' | at 02:11
+#echo './kill' | at 02:23
+#echo './zabrpc 0.2' | at 02:25
+#echo './kill' | at 02:37
+#echo './zabrpc 0.2' | at 02:39
+#echo './kill' | at 02:53
+
+#echo './zabrpc 0.3' | at 02:55
+#echo './kill' | at 03:05
+#echo './zabrpc 0.3' | at 03:07
+#echo './kill' | at 03:17
+#echo './zabrpc 0.3' | at 03:19
+#echo './kill' | at 03:29
+
+#echo './zabrpc 0.4' | at 03:31
+#echo './kill' | at 03:40
+#echo './zabrpc 0.4' | at 03:42
+#echo './kill' | at 03:51
+#echo './zabrpc 0.4' | at 03:52
+#echo './kill' | at 03:59
+
+#echo './zabrpc 0.5' | at 04:01
+#echo './kill' | at 04:10
+#echo './zabrpc 0.5' | at 04:12
+#echo './kill' | at 04:20
+#echo './zabrpc 0.5' | at 04:22
+#echo './kill' | at 04:30
+
+#echo './zabrpc 0.6' | at 04:32
+#echo './kill' | at 04:40
+#echo './zabrpc 0.6' | at 04:42
+#echo './kill' | at 04:50
+#echo './zabrpc 0.6' | at 04:52
+#echo './kill' | at 04:59
+
+#echo './zabrpc 0.7' | at 05:01
+#echo './kill' | at 05:09
+#echo './zabrpc 0.7' | at 05:11
+#echo './kill' | at 05:20
+#echo './zabrpc 0.7' | at 05:22
+#echo './kill' | at 05:31
+
+#echo './zabrpc 0.8' | at 05:33
+#echo './kill' | at 05:42
+#echo './zabrpc 0.8' | at 05:44
+#echo './kill' | at 05:53
+#echo './zabrpc 0.8' | at 05:55
+#echo './kill' | at 06:05
+
+#echo './zabrpc 0.9' | at 05:54
+#echo './kill' | at 06:08
+#echo './zabrpc 0.9' | at 06:09
+#echo './kill' | at 06:20
+#echo './zabrpc 0.9' | at 06:22
+#echo './kill' | at 06:30
+
+#echo './zabrpc 1.0' | at 06:32
+#echo './kill' | at 06:37
+#echo './zabrpc 1.0' | at 06:39
+#echo './kill' | at 06:44
+
+#echo './zabrpc 0.25' | at 06:46
+#echo './kill' | at 06:56
+#echo './zabrpc 0.25' | at 06:58
+#echo './kill' | at 07:10
+#echo './zabrpc 0.25' | at 07:12
+#echo './kill' | at 07:25
+
+#echo './zabrpc 0.75' | at 07:26
+#echo './kill' | at 07:33
+#echo './zabrpc 0.75' | at 07:35
+#echo './kill' | at 07:45
+#echo './zabrpc 0.75' | at 07:46
+#echo './kill' | at 07:56
+
+
+#echo './zabrpc 0.2' | at 18:27
+#echo './kill' | at 18:37
+
+#echo './zabrpc 0.0' | at 03:09
+#echo './kill' | at 23:30
+#echo './zabrpc 1.0' | at 23:32
+#echo './kill' | at 23:40
+
+#echo './zabrpc 0.0' | at 03:00
+#echo './kill' | at 03:10
+#echo './zabrpc 0.0' | at 03:12
+#echo './kill' | at 03:22
+
+#echo './zabrpc 0.1' | at 03:24
+#echo './kill' | at 03:32
+#echo './zabrpc 0.1' | at 03:34
+#echo './kill' | at 03:42
+
+#echo './zabrpc 0.2' | at 03:44
+#echo './kill' | at 03:52
+#echo './zabrpc 0.2' | at 03:54
+#echo './kill' | at 04:03
+
+#echo './zabrpc 0.3' | at 04:12
+#echo './kill' | at 04:14
+#echo './zabrpc 0.3' | at 04:16
+#echo './kill' | at 04:22
+
+#echo './zabrpc 0.4' | at 04:24
+#echo './kill' | at 04:32
+#echo './zabrpc 0.4' | at 04:34
+#echo './kill' | at 04:43
+
+#echo './zabrpc 0.5' | at 04:45
+#echo './kill' | at 04:54
+#echo './zabrpc 0.5' | at 04:56
+#echo './kill' | at 05:05
+
+#echo './zabrpc 0.6' | at 05:07
+#echo './kill' | at 05:14
+#echo './zabrpc 0.6' | at 05:16
+#echo './kill' | at 05:23
+
+#echo './zabrpc 0.7' | at 05:25
+#echo './kill' | at 05:33
+#echo './zabrpc 0.7' | at 05:35
+#echo './kill' | at 05:43
+
+#echo './zabrpc 0.8' | at 05:45
+#echo './kill' | at 05:52
+#echo './zabrpc 0.8' | at 05:54
+#echo './kill' | at 06:03
+
+#echo './zabrpc 0.9' | at 06:05
+#echo './kill' | at 06:13
+#echo './zabrpc 0.9' | at 06:15
+#echo './kill' | at 06:24
+
+#echo './zabrpc 0.25' | at 06:26
+#echo './kill' | at 06:34
+#echo './zabrpc 0.25' | at 06:36
+#echo './kill' | at 06:45
+
+#echo './zabrpc 0.75' | at 06:47
+#echo './kill' | at 06:54
+#echo './zabrpc 0.75' | at 06:57
+#echo './kill' | at 07:10
+
+#echo './zabrpc 1.0' | at 07:12
+#echo './kill' | at 07:20
+#echo './zabrpc 1.0' | at 07:22
+#echo './kill' | at 07:30
+
+#-------------------Night-----------------------------
+#echo './zabrpc 0.0' | at 23:37
+#echo './kill' | at 23:51
+#echo './zabrpc 0.0' | at 23:52
+#echo './kill' | at 00:03
+
+#echo './zabrpc 0.1' | at 00:04
+#echo './kill' | at 00:11
+#echo './zabrpc 0.1' | at 01:12
+#echo './kill' | at 01:20
+
+#echo './zabrpc 0.2' | at 00:12
+#echo './kill' | at 00:22
+#echo './zabrpc 0.2' | at 00:24
+#echo './kill' | at 00:33
+
+#echo './zabrpc 0.3' | at 00:35
+#echo './kill' | at 00:42
+#echo './zabrpc 0.3' | at 00:44
+#echo './kill' | at 00:52
+
+#echo './zabrpc 0.4' | at 00:54
+#echo './kill' | at 01:02
+#echo './zabrpc 0.4' | at 01:04
+#echo './kill' | at 01:10
+
+#echo './zabrpc 0.5' | at 01:12
+#echo './kill' | at 01:20
+#echo './zabrpc 0.5' | at 01:22
+#echo './kill' | at 01:30
+
+#echo './zabrpc 0.6' | at 01:32
+#echo './kill' | at 01:40
+#echo './zabrpc 0.6' | at 01:42
+#echo './kill' | at 01:50
+
+#echo './zabrpc 0.7' | at 01:52
+#echo './kill' | at 02:00
+#echo './zabrpc 0.7' | at 02:02
+#echo './kill' | at 02:10
+
+#echo './zabrpc 0.8' | at 02:12
+#echo './kill' | at 02:20
+#echo './zabrpc 0.8' | at 02:22
+#echo './kill' | at 02:30
+
+#echo './zabrpc 0.9' | at 02:32
+#echo './kill' | at 02:40
+#echo './zabrpc 0.9' | at 02:42
+#echo './kill' | at 02:50
+
+#echo './zabrpc 0.25' | at 02:52
+#echo './kill' | at 03:00
+#echo './zabrpc 0.25' | at 03:02
+#echo './kill' | at 03:10
+
+#echo './zabrpc 0.75' | at 03:12
+#echo './kill' | at 03:20
+#echo './zabrpc 0.75' | at 03:22
+#echo './kill' | at 03:30
+
+#echo './zabrpc 1.0' | at 03:32
+#echo './kill' | at 03:40
+#echo './zabrpc 1.0' | at 03:42
+#echo './kill' | at 03:50
+
+#echo './zabrpc 0.1' | at 23:01
+#echo './kill' | at 23:07
+
+
+#echo './zabrpc 0.0' | at 14:03
+#echo './kill' | at 03:12
+#echo './zabrpc 0.0' | at 00:20
+#echo './kill' | at 00:32
+#echo './zabrpc 0.0' | at 00:34
+#echo './kill' | at 00:47
+#echo './zabrpc 0.0' | at 00:49
+#echo './kill' | at 00:05
+#echo './zabrpc 0.0' | at 01:07
+#echo './kill' | at 01:20
+
+#echo './zabrpc 0.25' | at 21:35
+#echo './kill' | at 23:12
+#echo './zabrpc 0.25' | at 23:32
+#echo './kill' | at 00:30
+#echo './zabrpc 0.25' | at 00:31
+#echo './kill' | at 00:42
+#echo 'python moveFileCT R-0.25 RR-0.25' | at 21:44
+#echo './rmRR' | at 00:50
+
+#echo './zabrpc 0.5' | at 21:50
+#echo './kill' | at 01:06
+#echo './zabrpc 0.5' | at 22:07
+#echo './kill' | at 22:17
+#echo './zabrpc 0.5' | at 22:18
+#echo './kill' | at 22:30
+#echo 'python moveFileCT R-0.5 RR-0.5' | at 22:35
+#echo './rmRR' | at 22:40
+
+#echo './zabrpc 0.75' | at 22:44
+#echo './kill' | at 22:55
+#echo './zabrpc 0.75' | at 23:00
+#echo './kill' | at 23:10
+#echo './zabrpc 0.75' | at 23:11
+#echo './kill' | at 23:22
+#echo 'python moveFileCT R-0.75 RR-0.75' | at 23:35
+#echo './rmRR' | at 23:40
+
+
+#echo './zabrpc 0.25' | at 01:58
+#echo './kill' | at 02:10
+#echo './zabrpc 0.25' | at 02:12
+#echo './kill' | at 02:22
+
+#echo './zabrpc 0.5' | at 02:24
+#echo './kill' | at 02:34
+#echo './zabrpc 0.5' | at 02:36
+#echo './kill' | at 02:46
+#echo './zabrpc 0.5' | at 02:48
+#echo './kill' | at 02:58
+#echo './zabrpc 0.5' | at 03:00
+#echo './kill' | at 03:10
+#echo './zabrpc 0.5' | at 03:12
+#echo './kill' | at 03:22
+
+#echo './zabrpc 0.75' | at 03:24
+#echo './kill' | at 03:34
+#echo './zabrpc 0.75' | at 03:36
+#echo './kill' | at 03:46
+#echo './zabrpc 0.75' | at 03:48
+#echo './kill' | at 03:58
+#echo './zabrpc 0.75' | at 04:10
+#echo './kill' | at 04:20
+#echo './zabrpc 0.75' | at 04:22
+#echo './kill' | at 04:30
+
+#echo './zabrpc 1.0' | at 18:20
+#echo './kill' | at 18:25
+#echo './zabrpc 1.0' | at 18:27
+#echo './kill' | at 18:33
+#echo './zabrpc 1.0' | at 18:35
+#echo './kill' | at 18:40
+#echo './zabrpc 1.0' | at 18:42
+#echo './kill' | at 18:47
+#echo './zabrpc 1.0' | at 18:49
+#echo './kill' | at 18:55
+
+
+
+#echo './zabrpc 0.5' | at 00:03
+#echo './kill' | at 23:33
+#echo './zabrpc 0.5' | at 23:35
+#echo './kill' | at 23:40
+#echo './zabrpc 0.5' | at 23:42
+#echo './kill' | at 23:48
+#echo './zabrpc 0.5' | at 23:50
+#echo './kill' | at 23:55
+#echo './zabrpc 0.5' | at 23:57
+#echo './kill' | at 00:03
+
+#echo './zabrpc 0.0' | at 01:27
+#echo './kill' | at 00:09
+#echo './zabrpc 0.75' | at 00:11
+#echo './kill' | at 00:16
+#echo './zabrpc 0.75' | at 00:18
+#echo './kill' | at 00:23
+#echo './zabrpc 0.75' | at 00:25
+#echo './kill' | at 00:30
+#echo './zabrpc 0.75' | at 00:32
+#echo './kill' | at 00:37
+
+#echo './zabrpc 1.0' | at 19:44
+#echo './kill' | at 19:50
+#echo './zabrpc 1.0' | at 19:52
+#echo './kill' | at 19:58
+#echo './zabrpc 1.0' | at 20:00
+#echo './kill' | at 20:05
+#echo './zabrpc 1.0' | at 20:07
+#echo './kill' | at 20:13
+#echo './zabrpc 1.0' | at 20:15
+#echo './kill' | at 20:20
+
+#echo './zabrpc' | at 11:58
+#echo './kill' | at 01:33
+#echo './zabrpc' | at 18:12
+#echo './kill' | at 18:32
+#echo './zabrpc' | at 18:34
+#echo './kill' | at 18:54
+#echo './zabrpc' | at 18:56
+#echo './kill' | at 19:16
+#echo './zabrpc' | at 19:18
+#echo './kill' | at 19:38
+#echo './zabrpc' | at 19:40
+#echo './kill' | at 20:00
+#echo './zabrpc' | at 20:02
+#echo './kill' | at 20:22
+#echo './zabrpc' | at 20:24
+#echo './kill' | at 20:44
+
+#echo './zabrpc' | at 00:50
+#echo './kill' | at 01:17
+
+#echo './zabrpc' | at 08:42
+#echo './kill' | at 09:00
+#echo './zabrpc' | at 01:50
+#echo './kill' | at 02:07
+#echo './zabrpc' | at 02:10
+#echo './kill' | at 02:27
+#echo './zabrpc' | at 02:30
+#echo './kill' | at 02:47
+#echo './zabrpc' | at 02:50
+#echo './kill' | at 03:17
+
+#echo './zabrpc' | at 23:20
+#echo './kill' | at 19:50
+
+#echo './zabrpc' | at 16:16
+#echo './kill' | at 16:31
+#echo './zabrpc' | at 16:33
+#echo './kill' | at 16:50
+#echo './zabrpc' | at 16:53
+#echo './kill' | at 17:10
+#echo './zabrpc' | at 17:13
+#echo './kill' | at 17:30
+#echo './zabrpc' | at 17:33
+#echo './kill' | at 17:50
+#echo './zabrpc' | at 17:53
+#echo './kill' | at 18:10
+#echo './zabrpc' | at 18:13
+#echo './kill' | at 18:30
+#echo './zabrpc' | at 18:33
+#echo './kill' | at 18:50
+#echo './zabrpc' | at 18:53
+#echo './kill' | at 19:10
+#echo './zabrpc' | at 19:13
+#echo './kill' | at 19:30
+#echo './zabrpc' | at 08:13
+#echo './kill' | at 08:30
+#echo './zabrpc' | at 08:33
+#echo './kill' | at 08:50
+#echo './zabrpc' | at 08:53
+#echo './kill' | at 09:10
+#echo './zabrpc' | at 09:13
+#echo './kill' | at 09:30
+#echo './zabrpc 0.0' | at 22:35
+#echo './zabrpc' | at 11:32
+#echo './kill' | at 23:10
+#echo './zabrpc' | at 23:13
+#echo './kill' | at 23:30
+#echo './zabrpc' | at 23:33
+#echo './kill' | at 23:50
+#echo './zabrpc' | at 23:53
+#echo './kill' | at 00:10
+#echo './zabrpc' | at 00:13
+#echo './kill' | at 00:30
+#echo './zabrpc' | at 00:33
+#echo './kill' | at 00:50
+#echo './zabrpc' | at 00:53
+#echo './kill' | at 01:10
+#echo './zabrpc' | at 01:13
+#echo './kill' | at 01:30
+#echo './zabrpc' | at 01:33
+#echo './kill' | at 01:50
+#echo './zabrpc' | at 01:53
+#echo './kill' | at 02:10
+#echo './kill' | at 20:50
+#echo './zabrpc' | at 20:53
+#echo './kill' | at 21:10
+#echo './zabrpc 0.0' | at 22:35
+#echo './kill' | at 22:59
+#echo './zabrpc 0.0' | at 00:24
+#echo './kill' | at 00:49
+#echo './zabrpc 0.0' | at 00:51
+#echo './kill' | at 01:15
+#echo './zabrpc 0.0' | at 01:17
+#echo './kill' | at 01:40
+#echo './zabrpc 0.0' | at 01:42
+#echo './kill' | at 02:10
+#echo './zabrpc 0.0' | at 02:12
+#echo './kill' | at 02:35
+#echo './zabrpc 0.0' | at 02:37
+#echo './kill' | at 02:57
+#echo './zabrpc 0.0' | at 02:59
+#echo './kill' | at 03:25
+#echo './zabrpc 0.0' | at 03:27
+#echo './kill' | at 03:59
+#echo './zabrpc 0.0' | at 00:12
+#echo './kill' | at 00:33
+#echo './zabrpc 0.0' | at 00:35
+#echo './kill' | at 00:59
+#echo './zabrpc 0.0' | at 18:45
+#echo './kill' | at 19:56
+#echo './zabrpc 0.5' | at 16:51
+#echo './kill' | at 17:10
+#echo './zabrpc 0.25' | at 00:27
+#echo './kill' | at 00:50
+#echo './zabrpc 0.25' | at 00:51
+#echo './kill' | at 01:10
+#echo './zabrpc 0.25' | at 01:11
+#echo './kill' | at 01:30
+#echo './zabrpc 0.25' | at 01:31
+#echo './kill' | at 01:50
+#echo './zabrpc 0.25' | at 01:51
+#echo './kill' | at 02:10
+#echo './zabrpc 0.0' | at 23:34
+#echo './kill' | at 19:27
+#echo './zabrpc 0.25' | at 22:58
+#echo './kill' | at 23:15
+#echo './zabrpc 0.25' | at 23:49
+#echo './kill' | at 23:57
+#echo './zabrpc 0.25' | at 23:49
+#echo './kill' | at 23:57
+#echo './zabrpc 0.25' | at 17:49
+#echo './kill' | at 17:57
+#echo './zabrpc 0.25' | at 17:49
+#echo './kill' | at 17:57
+#echo './zabrpc 0.75' | at 12:47
+#echo './kill' | at 12:51
+#echo './zabrpc 0.75' | at 12:52
+#echo './kill' | at 12:57
+#echo './makeDir R-0.5' | at 10:50
+#echo './zabrpc 0.0' | at 00:51
+#echo './kill' | at 01:05
+#echo './zabrpc 1.0' | at 03:56
+#echo './kill' | at 04:10
+#echo './zabrpc 1.0' | at 04:11
+#echo './kill' | at 04:20
+#echo './zabrpc 1.0' | at 04:21
+#echo './kill' | at 04:30
+#echo './zabrpc 1.0' | at 17:04
+#echo './kill' | at 17:10
+#echo './zabrpc  1.0' | at 17:11
+#echo './kill' | at 17:17
+#echo './zabrpc  1.0' | at 17:18
+#echo './kill' | at 17:25
+#echo './zabrpc  1.0' | at 17:26
+#echo './kill' | at 17:33
+#echo './zabrpc  1.0' | at 17:34
+#echo './kill' | at 17:41
+#echo './zabrpc 1.0' | at 20:41
+#echo './kill' | at 20:46
+#echo './zabrpc 1.0' | at 20:47
+#echo './kill' | at 20:53
+#echo './zabrpc 0.75' | at 19:13
+#echo './kill' | at 19:20
+#echo './zabrpc 0.75' | at 19:21
+#echo './kill' | at 19:30
+#echo './zabrpc 0.75' | at 19:31
+#echo './kill' | at 19:40
+#echo './zabrpc 1000' | at 23:04
+#echo './kill' | at 23:07
+#echo './zabrpc 1000' | at 23:08
+#echo './kill' | at 23:11
+#echo './zabrpc 1000' | at 23:12
+#echo './kill' | at 23:15
+#echo './zabrpc 1000' | at 23:16
+#echo './kill' | at 23:19
+
+#echo './kill' | 
+#echo './zabrpc 0.50' | at 13:42
+#echo './kill' | at 18:37
+#echo './zabrpc 0.25' | at 19:01
+#echo './kill' | at 21:43
+#echo './zabrpc 0.25' | at 02:29
+#echo './kill' | at 02:47
+#echo './zabrpc 0.25' | at 14:17
+#echo './kill' | at 03:05
+#echo './zabrpc 0.0' | at 21:44
+#echo './kill' | at 21:55
+#echo './zabrpc 0.0' | at 21:56
+#echo './kill' | at 22:07
+#echo './zabrpc 0.0' | at 22:08
+#echo './kill' | at 04:08
+#echo './zabrpc 0.25' | at 21:59
+#echo './kill' | at 22:12
+#echo './zabrpc 0.25' | at 22:13
+#echo './kill' | at 22:25
+#echo './runZab 50' | at 20:09
+#echo './kill' | at 20:05
+#echo './runZab 50' | at 20:10
+#echo './kill' | at 20:27
+#echo 'python moveFile.py time50' | at 20:30
+#echo './rmcsv' | at 20:33
+#echo './runZab 56' | at 20:36
+#echo './kill' | at 20:51
+#echo './runZab 56' | at 20:55
+#echo './kill' | at 21:12
+#echo './runZab 56' | at 21:15
+#echo './kill' | at 21:32
+#echo './runZab 56' | at 21:36
+#echo './kill' | at 21:53
+#echo 'python moveFile.py time56' | at 21:57
+#echo './rmcsv' | at 22:02
+#echo './runZab 63' | at 22:06
+#echo './kill' | at 22:22
+#echo './runZab 63' | at 22:26
+#echo './kill' | at 22:44
+#echo './runZab 63' | at 22:48
+#echo './kill' | at 23:05
+#echo './runZab 63' | at 23:09
+#echo './kill' | at 23:26
+#echo 'python moveFile.py time63' | at 23:30
+#echo './rmcsv' | at 23:33
+#echo './runZab 71' | at 23:36
+#echo './kill' | at 23:53
+#echo './runZab 71' | at 23:56
+#echo './kill' | at 00:15
+#echo './runZab 71' | at 00:20
+#echo './kill' | at 00:40
+#echo './runZab 71' | at 00:44
+#echo './kill' | at 01:05
+#echo 'python moveFile.py time71' | at 01:08
+#echo './rmcsv' | at 01:11
+#echo './runZab 83' | at 01:16
+#echo './kill' | at 01:36
+#echo './runZab 83' | at 01:40
+#echo './kill' | at 02:00
+#echo './runZab 83' | at 02:03
+#echo './kill' | at 02:23
+#echo './runZab 83' | at 02:26
+#echo './kill' | at 02:46
+#echo 'python moveFile.py time83' | at 02:50
+#echo './rmcsv' | at 02:53
+#echo './runZab 100' | at 02:56
+#echo './kill' | at 03:17
+#echo './runZab 100' | at 03:20
+#echo './kill' | at 03:41
+#echo './runZab 100' | at 03:45
+#echo './kill' | at 04:06
+#echo './runZab 100' | at 04:10
+#echo './kill' | at 04:31
+#echo 'python moveFile.py time100' | at 04:35
+#echo './rmcsv' | at 04:40
+#echo './runZab 125' | at 04:43
+#echo './kill' | at 05:10
+#echo './runZab 125' | at 05:13
+#echo './kill' | at 05:40
+#echo './runZab 125' | at 05:43
+#echo './kill' | at 06:05
+#echo './runZab 125' | at 06:08
+#echo './kill' | at 06:40
+#echo 'python moveFile.py time125' | at 06:45
+#Addtional 
+#echo './runZab 125' | at 06:50
+#echo './kill' | at 07:35
+#echo './runZab 125' | at 07:40
+#echo './kill' | at 08:10
+#echo './runZab 125' | at 08:15
+#echo './kill' | at 08:45
+#echo 'python moveFile.py time125' | at 08:50
+#echo './rmcsv' | at 08:55
+#echo './runZab 50' | at 09:00
+#echo './kill' | at 09:20
+#echo 'python moveFile.py time50' | at 09:25
+#echo './rmcsv' | at 09:30
+#echo './runZab 56' | at 09:35
+#echo './kill' | at 09:55
+#echo 'python moveFile.py time56' | at 10:00
+#echo './rmcsv' | at 10:05
+#echo './runZab 83' | at 10:10
+#echo './kill' | at 10:30
+#echo './runZab 83' | at 10:35
+#echo './kill' | at 10:55
+#echo './zabjgroups 50' | at 19:10
+#echo './kill' | at 19:30
+#echo './zabjgroups 50' | at 19:33
+#echo './kill' | at 19:53
+#echo './zabjgroups 50' | at 19:56
+#echo './kill' | at 20:16
+#echo './zabjgroups 50' | at 20:20
+#echo './kill' | at 20:40
+#echo 'python moveFile.py time50' | at 20:45
+#echo './zabjgroups 71' | at 01:05
+#echo './kill' | at 01:25
+#echo './zabjgroups 71' | at 01:30
+#echo './kill' | at 01:50
+#echo './makeDir time71' | at 01:55
+#echo 'python moveFile.py time71' | at 11:45
+#echo './rmcsv' | at 11:50
+#echo './zabjgroups 83' | at 02:20
+#echo './kill' | at 02:40
+#echo './zabjgroups 83' | at 02:45
+#echo './kill' | at 03:05
+#echo './zabjgroups 83' | at 03:10
+#echo './kill' | at 03:30
+#echo './zabjgroups 83' | at 03:35
+#echo './kill' | at 03:55
+#echo 'python moveFile.py time83' | at 04:00
+#echo './rmcsv' | at 04:05
+#echo './zabjgroups 100' | at 05:05
+#echo './kill' | at 05:25
+#echo './zabjgroups 100' | at 05:30
+#echo './kill' | at 05:25
+#echo './zabjgroups 100' | at 05:30
+#echo './kill' | at 05:50
+#echo './zabjgroups 100' | at 11:55
+#echo './kill' | at 12:15
+#echo './zabjgroups 100' | at 12:20
+#echo './kill' | at 12:45
+#echo './zabjgroups 100' | at 05:05
+#echo './kill' | at 05:25
+#echo './zabjgroups 100' | at 05:30
+#echo './kill' | at 05:50
+#echo './makeDir time100' | at 05:55
+#echo 'python moveFile.py time100' | at 12:50
+#echo './rmcsv' | at 06:10
+#echo './zabjgroups 125' | at 06:15
+#echo './kill' | at 06:40
+#echo './zabjgroups 125' | at 06:45
+#echo './kill' | at 07:10
+#echo './zabjgroups 125' | at 07:15
+#echo './kill' | at 07:40
+#echo './zabjgroups 125' | at 07:45
+#echo './kill' | at 08:10
+#echo './makeDir time125' | at 08:15
+#echo 'python moveFile.py time125' | at 08:20
+#echo 'python getAllFiles.py' | at 14:26
+#echo './zabjgroups 56' | at 20:45
+#echo './kill' | at 21:00
+#echo './zabjgroups 56' | at 21:05
+#echo './kill' | at 21:20
+#Addtional 
+#echo './zabjgroups 50' | at 11:14
+#echo './kill' | at 11:32
+#echo 'python moveFile.py time50' | at 11:35
+#echo './zabjgroups 56' | at 11:40
+#echo './kill' | at 12:10
+exit

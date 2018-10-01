@@ -1,0 +1,130 @@
+#!/bin/bash 
+#echo './rmcsv' | at 20:50
+echo './zabjgroups 100' | at 18:00
+echo './kill' | at 18:30
+#echo './zabjgroups 56' | at 20:55
+#echo './kill' | at 21:15
+#echo './zabjgroups 56' | at 21:20
+#echo './kill' | at 21:40
+#echo './zabjgroups 56' | at 21:45
+#echo './kill' | at 22:05
+#echo './zabjgroups 56' | at 22:10
+#echo './kill' | at 22:20
+#echo 'python moveFile.py time56' | at 22:25
+#echo './rmcsv' | at 22:30
+#echo './zabjgroups 63' | at 22:35
+#echo './kill' | at 22:55
+#echo './zabjgroups 63' | at 23:00
+#echo './kill' | at 23:20
+#echo './zabjgroups 63' | at 23:25
+#echo './kill' | at 23:45
+#echo './zabjgroups 63' | at 23:50
+#echo './kill' | at 00:10
+#echo 'python moveFile.py time63' | at 00:15
+#echo './rmcsv' | at 00:20
+#echo './zabjgroups 71' | at 00:25
+#echo './kill' | at 00:50
+#echo './zabjgroups 71' | at 00:55
+#echo './kill' | at 01:20
+#echo './zabjgroups 71' | at 01:25
+#echo './kill' | at 01:50
+#echo './zabjgroups 71' | at 01:55
+#echo './kill' | at 02:20
+#echo 'python moveFile.py time71' | at 02:25
+#echo './rmcsv' | at 02:30
+#echo './zabjgroups 83' | at 02:35
+#echo './kill' | at 03:00
+#echo './zabjgroups 83' | at 03:05
+#echo './kill' | at 03:30
+#echo './zabjgroups 83' | at 03:35
+#echo './kill' | at 04:00
+#echo './zabjgroups 83' | at 04:05
+#echo './kill' | at 04:30
+#echo 'python moveFile.py time83' | at 04:35
+#echo './rmcsv' | at 04:40
+#echo './zabjgroups 100' | at 04:45
+#echo './kill' | at 05:10
+#echo './zabjgroups 100' | at 05:15
+#echo './kill' | at 05:40
+#echo './zabjgroups 100' | at 05:45
+#echo './kill' | at 06:10
+#echo './zabjgroups 100' | at 06:15
+#echo './kill' | at 06:40
+#echo 'python moveFile.py time100' | at 06:45
+#echo './rmcsv' | at 06:50
+#echo './zabjgroups 125' | at 06:55
+#echo './kill' | at 07:30
+#echo './zabjgroups 125' | at 07:35
+#echo './kill' | at 08:10
+#echo './zabjgroups 125' | at 08:15
+#echo './kill' | at 08:50
+#echo './zabjgroups 125' | at 08:55
+#echo './kill' | at 09:30
+#echo 'python moveFile.py time125' | at 09:35
+#echo './zabjgroups 100' | at 10:44
+#echo './kill' | at 10:06
+#echo './zabjgroups 50' | at 19:10
+#echo './kill' | at 19:30
+#echo './zabjgroups 50' | at 19:33
+#echo './kill' | at 19:53
+#echo './zabjgroups 50' | at 19:56
+#echo './kill' | at 20:16
+#echo './zabjgroups 50' | at 20:20
+#echo './kill' | at 20:40
+#echo 'python moveFile.py time50' | at 20:45
+#echo './zabjgroups 71' | at 01:05
+#echo './kill' | at 01:25
+#echo './zabjgroups 71' | at 01:30
+#echo './kill' | at 01:50
+#echo './makeDir time71' | at 01:55
+#echo 'python moveFile.py time71' | at 11:45
+#echo './rmcsv' | at 11:50
+#echo './zabjgroups 83' | at 02:20
+#echo './kill' | at 02:40
+#echo './zabjgroups 83' | at 02:45
+#echo './kill' | at 03:05
+#echo './zabjgroups 83' | at 03:10
+#echo './kill' | at 03:30
+#echo './zabjgroups 83' | at 03:35
+#echo './kill' | at 03:55
+#echo 'python moveFile.py time83' | at 04:00
+#echo './rmcsv' | at 04:05
+#echo './zabjgroups 100' | at 05:05
+#echo './kill' | at 05:25
+#echo './zabjgroups 100' | at 05:30
+#echo './kill' | at 05:25
+#echo './zabjgroups 100' | at 05:30
+#echo './kill' | at 05:50
+#echo './zabjgroups 100' | at 11:55
+#echo './kill' | at 12:15
+#echo './zabjgroups 100' | at 12:20
+#echo './kill' | at 12:45
+#echo './zabjgroups 100' | at 05:05
+#echo './kill' | at 05:25
+#echo './zabjgroups 100' | at 05:30
+#echo './kill' | at 05:50
+#echo './makeDir time100' | at 05:55
+#echo 'python moveFile.py time100' | at 12:50
+#echo './rmcsv' | at 06:10
+#echo './zabjgroups 125' | at 06:15
+#echo './kill' | at 06:40
+#echo './zabjgroups 125' | at 06:45
+#echo './kill' | at 07:10
+#echo './zabjgroups 125' | at 07:15
+#echo './kill' | at 07:40
+#echo './zabjgroups 125' | at 07:45
+#echo './kill' | at 08:10
+#echo './makeDir time125' | at 08:15
+#echo 'python moveFile.py time125' | at 08:20
+#echo 'python getAllFiles.py' | at 14:26
+#echo './zabjgroups 56' | at 20:45
+#echo './kill' | at 21:00
+#echo './zabjgroups 56' | at 21:05
+#echo './kill' | at 21:20
+#Addtional 
+#echo './zabjgroups 50' | at 11:14
+#echo './kill' | at 11:32
+#echo 'python moveFile.py time50' | at 11:35
+#echo './zabjgroups 56' | at 11:40
+#echo './kill' | at 12:10
+exit
