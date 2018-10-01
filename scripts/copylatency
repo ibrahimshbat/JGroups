@@ -1,0 +1,36 @@
+#!/bin/bash
+arr=(mill039 mill046 mill040 mill042 mill044)
+geometry=10x24+10+40
+moveTobenchmark="cd /home/pg/p13/a6915654/workspace9/zookeeper-benchmark-master/"
+newfolder="mkdir latency"
+#movetowork="cd /; cd work; cd zookeeper; cd latency;"
+command="cp /work/zookeeper/latency/*.log /home/pg/p13/a6915654/workspace9/zookeeper-benchmark-master/latency"
+cleanUp="rm -r /home/pg/p13/a6915654/workspace9/zookeeper-benchmark-master/latency/"
+if [[ $# < 1 ]]; then
+	 $cleanUp
+	 $moveTobenchmark
+         $newfolder
+	 cd latency
+	for ((i = 0; i < ${#arr[@]}; i++));do
+		HOST="${arr[$i]}"
+		mkdir $HOST
+		if (( $i >= 0 )); then
+		    ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no $HOST <<-ENDEXP
+	            cp /work/zookeeper/latency/*.log /home/pg/p13/a6915654/workspace9/zookeeper-benchmark-master/latency/$HOST
+		    #nohup $command > ${arr[$i]}.out 2> ${arr[$i]}.err < /dev/null &
+		   gnome-terminal --geometry=10x24+10 --title "${arr[$i]}" "ssh -t -o ConnectTimeout=1 a6915654@${arr[$i]}.ncl.ac.uk " > output.txt 			    2>&1
+		    exit
+ENDEXP
+		fi
+	done
+else
+	if [ $1 = "kill" ]; then
+	   for i in ${arr[@]}; do
+               if [ $i != ${arr[0]} ]; then
+               	  HOST="a6915654@$i"
+                  ssh -t -o ConnectTimeout=1 $HOST 'pkill -u a6915654'
+       	       fi
+	   done
+        fi
+fi
+exit
