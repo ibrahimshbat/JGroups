@@ -1,0 +1,410 @@
+#!/bin/bash 
+echo './kill' | at 04:30
+echo './zabrpc 1100' | at 04:35
+#echo './kill' | at 17:20
+#echo './zabrpc 10000' | at 22:13
+#echo './kill' | at 22:18
+#echo './zabrpc 1000' | at 22:19
+#echo './kill' | at 22:25
+
+#echo './zabrpc 2000' | at 22:26
+#echo './kill' | at 22:31
+#echo './zabrpc 2000' | at 22:32
+#echo './kill' | at 22:40
+#echo './zabrpc 2000' | at 22:41
+#echo './kill' | at 22:47
+
+#echo './zabrpc 3000' | at 22:48
+#echo './kill' | at 22:53
+#echo './zabrpc 3000' | at 22:54
+#echo './kill' | at 23:00
+#echo './zabrpc 3000' | at 23:01
+#echo './kill' | at 23:07
+
+#echo './zabrpc 4000' | at 23:08
+#echo './kill' | at 23:14
+#echo './zabrpc 4000' | at 23:15
+#echo './kill' | at 23:23
+#echo './zabrpc 4000' | at 23:24
+#echo './kill' | at 23:34
+
+#echo './zabrpc 5000' | at 23:35
+#echo './kill' | at 23:42
+#echo './zabrpc 5000' | at 23:43
+#echo './kill' | at 23:51
+#echo './zabrpc 5000' | at 23:52
+#echo './kill' | at 00:05
+
+#echo './zabrpc 5000' | at 00:06
+#echo './kill' | at 00:13
+#echo './zabrpc 5000' | at 00:14
+#echo './kill' | at 00:25
+#echo './zabrpc 5000' | at 00:26
+#echo './kill' | at 00:35
+
+#echo './zabrpc 6000' | at 00:36
+#echo './kill' | at 00:47
+#echo './zabrpc 6000' | at 00:48
+#echo './kill' | at 00:58
+#echo './zabrpc 6000' | at 00:59
+#echo './kill' | at 01:13
+
+#echo './zabrpc 7000' | at 01:14
+#echo './kill' | at 01:25
+#echo './zabrpc 7000' | at 01:26
+#echo './kill' | at 01:36
+#echo './zabrpc 7000' | at 01:37
+#echo './kill' | at 01:50
+
+#echo './zabrpc 8000' | at 01:51
+#echo './kill' | at 02:05
+#echo './zabrpc 8000' | at 02:06
+#echo './kill' | at 02:20
+#echo './zabrpc 8000' | at 02:21
+#echo './kill' | at 02:35
+
+#echo './zabrpc 9000' | at 02:36
+#echo './kill' | at 02:52
+#echo './zabrpc 9000' | at 02:53
+#echo './kill' | at 03:10
+#echo './zabrpc 9000' | at 03:11
+#echo './kill' | at 03:25
+
+#echo './zabrpc 10000' | at 03:26
+#echo './kill' | at 03:42
+#echo './zabrpc 10000' | at 03:43
+#echo './kill' | at 03:58
+#echo './zabrpc 10000' | at 03:59
+#echo './kill' | at 04:20
+
+
+#echo './zabrpc 7000' | at 11:21
+#echo './kill' | at 11:03
+#echo './zabrpc 7000' | at 11:04
+#echo './kill' | at 11:07
+#echo './zabrpc 7000' | at 11:08
+#echo './kill' | at 11:11
+#echo './zabrpc 7000' | at 11:12
+#echo './kill' | at 11:15
+#echo './zabrpc 7000' | at 11:16
+#echo './kill' | at 11:19
+#echo './zabrpc 7000' | at 11:20
+#echo './kill' | at 11:23
+#echo './zabrpc 7000' | at 11:24
+#echo './kill' | at 11:27
+#echo './zabrpc 7000' | at 11:28
+#echo './kill' | at 11:31
+#echo './zabrpc 7000' | at 11:32
+#echo './kill' | at 11:36
+#echo './zabrpc 7000' | at 11:37
+#echo './kill' | at 11:40
+#echo './zabrpc 7000' | at 11:41
+#echo './kill' | at 11:44
+#echo './zabrpc 7000' | at 11:45
+#echo './kill' | at 11:48
+#echo './zabrpc 7000' | at 11:49
+#echo './kill' | at 11:52
+#echo './zabrpc 7000' | at 11:53
+#echo './kill' | at 11:56
+#echo './zabrpc 7000' | at 11:57
+#echo './kill' | at 11:59
+#echo './zabrpc 7000' | at 12:00
+#echo './kill' | at 12:03
+#echo './zabrpc 7000' | at 12:04
+#echo './kill' | at 12:07
+
+
+
+#echo './runZab2P 50' | at 17:28
+#echo './kill' | at 17:48
+#echo 'python moveFile.py time50' | at 15:36
+#echo './runZab2P 100' | at 03:06
+#echo './kill' | at 03:16
+#echo './runZabCT 100' | at 03:10
+#echo './kill' | at 03:40
+#echo './runZabCT 100' | at 03:10
+#echo './kill' | at 03:40
+#echo './runZabCT 100' | at 03:10
+#echo './kill' | at 03:40
+#echo './runZabCT 100' | at 03:10
+#echo './kill' | at 03:40
+#echo './runZab2P 100' | at 12:28
+#echo './kill' | at 12:55
+#echo './runZab 100' | at 15:30
+#echo './kill' | at 15:55
+#echo './runZab 100' | at 15:57
+#echo './kill' | at 16:25
+#echo './runZab 100' | at 16:27
+#echo './kill' | at 16:55
+#echo './zab2prpc 6' | at 01:06
+#echo './kill' | at 08:38
+#echo './zab2prpc 6' | at 17:09
+#echo './kill' |  at 17:15
+#echo './zab2prpc 6' | at 17:17
+#echo './kill' |  at 17:22
+#echo './zab2prpc 4' | at 20:38
+#echo './kill' |  at 20:55
+#echo './zab2prpc 4' | at 20:51
+#echo './kill' |  at 20:58
+#echo './zab2prpc 5' | at 21:00
+#echo './kill' |  at 21:08
+#echo './zab2prpc 5' | at 21:10
+#echo './kill' |  at 21:18
+#echo './zab2prpc 5' | at 21:20
+#echo './kill' |  at 21:28
+#echo './zab2prpc 6' | at 21:30
+#echo './kill' |  at 21:40
+#echo './zab2prpc 6' | at 21:42
+#echo './kill' |  at 21:51
+#echo './zab2prpc 7' | at 01:45
+#echo './kill' |  at 01:58
+#echo './zab2prpc 7' | at 02:00
+#echo './kill' |  at 02:15
+#echo './zabrpc 8' | at 22:56
+#echo './kill' |  at 23:10
+#echo './zabrpc 8' | at 23:12
+#echo './kill' |  at 23:25
+#echo './zabrpc 8' | at 23:27
+#echo './kill' |  at 23:43
+#echo './zabrpc 8' | at 23:45
+#echo './kill' |  at 00:00
+#echo './zabrpc 8' | at 00:02
+#echo './kill' |  at 00:16
+#echo './zabrpc 8' | at 00:18
+#echo './kill' |  at 00:34
+#echo './zabrpc 9' | at 00:36
+#echo './kill' |  at 00:50
+#echo './zabrpc 9' | at 00:52
+#echo './kill' |  at 01:15
+#echo './zabrpc 9' | at 01:17
+#echo './kill' |  at 01:35
+#echo './zabrpc 9' | at 01:37
+#echo './kill' |  at 01:55
+#echo './zabrpc 9' | at 01:57
+#echo './kill' |  at 02:17
+#echo './zabrpc 9' | at 02:19
+#echo './kill' |  at 02:45
+#echo './runZabSizeMore 100' | at 16:33
+#echo './kill' |  at 13:45
+#echo './runZabSizeMore 100' | at 13:47
+#echo './kill' |  at 14:15
+#echo './runZabSizeMore 100' | at 06:47
+#echo './kill' |  at 07:17
+#echo './runZabSizeMore 100' | at 07:19
+#echo './kill' |  at 07:40
+#echo './runZabSizeMore 100' | at 07:42
+#echo './kill' |  at 08:02
+#echo './runZabSizeMore 100' | at 08:04
+#echo './kill' |  at 08:24
+#echo './runZabSizeMore 100' | at 22:48
+#echo './kill' |  at 22:07
+#echo './runZabSizeMore 100' | at 22:09
+#echo './kill' |  at 22:25
+#echo './runZabCT 100' | at 01:00
+#echo './kill' | at 01:25
+#echo './runZabCT 100' | at 01:27
+#echo './kill' | at 01:58
+#echo './runZabCT 100' | at 02:00
+#echo './kill' | at 02:25
+#echo './runZabCT 100' | at 10:43
+#echo './kill' | at 02:58
+#echo './runZabCT 100' | at 03:22
+#echo './kill' | at 03:55
+#echo './runZab 100' | at 01:00
+#echo './kill' | at 01:22
+#echo './runZab 100' | at 01:23
+#echo './kill' | at 01:48
+#echo './runZab 100' | at 01:49
+#echo './kill' | at 02:18
+#echo './runZab 100' | at 02:20
+#echo './kill' | at 02:45
+#echo './runZab 100' | at 02:46
+#echo './kill' | at 03:15
+#echo './runZab 100' | at 22:15
+#echo './kill' | at 22:40
+#echo './runZab 100' | at 22:42
+#echo './kill' | at 23:10
+#echo './runZab 100' | at 23:12
+#echo './kill' | at 23:36
+#echo './runZab 100' | at 23:38
+#echo './kill' | at 00:10
+#echo './runZab 100' | at 03:33#
+#echo './kill' | at 03:50
+#echo './runZab 100' | at 03:55
+#echo './kill' | at 04:15
+#echo './runZab 100' | at 04:17
+#echo './kill' | at 04:37
+#echo './runZabSizeMore 100' | at 19:45
+#echo './kill' | at 06:28
+#echo './runZabSizeMore 100' | at 06:30
+#echo './kill' | at 06:45
+#echo './runZabSizeMore 100' | at 06:47
+#echo './kill' | at 07:10
+#echo './runZabSizeMore 100' | at 07:12
+#echo './kill' | at 07:35
+#echo './runZabSizeMore 100' | at 07:40
+#echo './kill' | at 07:59
+#echo './runZabCT 100' | at 03:10
+#echo './kill' | at 03:40
+#echo './runZabCT 100' | at 03:42
+#echo './kill' | at 05:10
+#echo './runZabCT 100' | at 05:12
+#echo './kill' | at 05:40
+#echo './runZabCT 100' | at 05:42
+#echo './kill' | at 06:10
+#echo './runZabCT 100' | at 11:02
+#echo './kill' | at 11:30
+#echo './runZabCT 100' | at 20:04
+#echo './kill' | at 20:30
+#echo './runZab 100' | at 02:02
+#echo './kill' | at 02:30
+#echo './runZab 100' | at 02:32
+#echo './kill' | at 03:00
+#echo './runZab 100' | at 03:02
+#echo './kill' | at 03:30
+#echo './runZab2P 100' | at 03:32
+#echo './kill' | at 04:00
+#echo './runZab2P 100' | at 04:02
+#echo './kill' | at 04:30
+#echo './runZab2P 100' | at 04:32
+#echo './kill' | at 05:00
+#echo './runZab2P 100' | at 05:02
+#echo './kill' | at 05:30
+#echo './runZab 100' | at 16:05
+#echo './kill' | at 16:30
+#echo './runZab 100' | at 16:32
+#echo './kill' | at 16:58
+#echo './runZab 100' | at 17:00
+#echo './kill' | at 17:25
+#echo './runZab 100' | at 17:28
+#echo './kill' | at 17:55
+#echo './runZab 100' | at 17:58
+#echo './kill' | at 18:25
+#echo 'python moveFile.py time50' | at 19:18
+#echo './rmcsv' | at 19:20
+#echo './runZabCT 100' | at 02:50
+#echo './kill' | at 20:18
+#echo './runZab 100' | at 20:20
+#echo './kill' | at 20:30
+#echo './runZabCT 100' | at 17:23
+#echo './kill' | at 17:28
+#echo './runZab2P 56' | at 19:50
+#echo './kill' | at 20:10
+#echo './runZab2P 56' | at 20:15
+#echo './kill' | at 20:35
+#echo './runZab2P 56' | at 20:40
+#echo './kill' | at 21:00
+#echo 'python moveFile.py time56' | at 21:05
+#echo './rmcsv' | at 21:10
+#echo './runZab2P 63' | at 21:15
+#echo './kill' | at 21:35
+#echo './runZab2P 63' | at 21:40
+#echo './kill' | at 22:00
+#echo './runZab2P 63' | at 22:05
+#echo './kill' | at 22:25
+#echo './runZab2P 63' | at 22:30
+#echo './kill' | at 22:50
+##echo 'python moveFile.py time63' | at 22:55
+#echo './rmcsv' | at 23:00
+#echo './runZab2P 71' | at 23:36
+#echo './kill' | at 23:53
+#echo './runZab2P 71' | at 23:56
+#echo './kill' | at 00:15
+#echo './runZab2P 71' | at 00:20
+#echo './kill' | at 00:40
+#echo './runZab2P 71' | at 00:44
+#echo './kill' | at 01:05
+#echo 'python moveFile.py time71' | at 01:08
+#echo './rmcsv' | at 01:11
+#echo './runZab2P 83' | at 01:16
+#echo './kill' | at 01:36
+#echo './runZab2P 83' | at 01:40
+#echo './kill' | at 02:00
+#echo './runZab2P 83' | at 02:03
+#echo './kill' | at 02:23
+#echo './runZab2P 83' | at 02:26
+#echo './kill' | at 02:46
+#echo 'python moveFile.py time83' | at 02:50
+#echo './rmcsv' | at 02:53
+#echo './runZab2P 100' | at 02:56
+#echo './kill' | at 03:17
+#echo './runZab2P 100' | at 03:20
+#echo './kill' | at 03:41
+#echo './runZab2P 100' | at 03:45
+#echo './kill' | at 04:06
+#echo './runZab2P 100' | at 04:10
+#echo './kill' | at 04:31
+#echo 'python moveFile.py time100' | at 04:35
+#echo './rmcsv' | at 04:40
+#echo './runZab2P 125' | at 04:43
+#echo './kill' | at 05:10
+#echo './runZab2P 125' | at 05:13
+#echo './kill' | at 05:40
+#echo './runZab2P 125' | at 05:43
+#echo './kill' | at 06:05
+#echo './runZab2P 125' | at 08:15
+#echo './kill' | at 08:45
+#echo 'python moveFile.py time125' | at 16:50
+#echo './rmcsv' | at 16:55
+#echo './runZab2P 56' | at 17:00
+#echo './kill' | at 17:20
+#echo 'python moveFile.py time56' | at 17:25
+#echo './rmcsv' | at 17:30
+#echo './runZab2P 100' | at 17:35
+#echo './kill' | at 17:58
+#echo 'python moveFile.py time100' | at 18:05
+#echo './rmcsv' | at 18:10
+#echo './runZab2P 125' | at 18:15
+#echo './kill' | at 18:45
+#echo './rmcsv' | at 22:20
+#echo './runZab2P 63' | at 22:25
+#echo './kill' | at 22:45
+#echo './runZab2P 63' | at 22:50
+#echo './kill' | at 23:10
+#echo 'python moveFile.py time63' | at 23:15
+#echo './rmcsv' | at 23:20
+#echo './runZab2P 125' | at 00:40
+#echo './kill' | at 01:10
+#echo './runZab2P 125' | at 01:15
+#echo './kill' | at 01:45
+#echo './runZab2P 125' | at 01:50
+#echo './kill' | at 02:20
+#echo './runZab2P 125' | at 02:25
+#echo './kill' | at 02:55
+#echo 'python moveFile.py time125' | at 03:00
+#echo './rmcsv' | at 03:05
+#echo './zabjgroups 83' | at 03:10
+#echo './kill' | at 03:35
+#echo './zabjgroups 83' | at 03:40
+#echo './kill' | at 04:10
+#echo './zabjgroups 83' | at 04:15
+#echo './kill' | at 04:50
+#echo './zabjgroups 83' | at 04:55
+#echo './kill' | at 05:25
+#echo 'python moveFileCT.py time83' | at 05:30
+#echo './rmcsvCT' | at 05:35
+#echo './zabjgroups 100' | at 05:40
+#echo './kill' | at 06:10
+#echo './zabjgroups 100' | at 06:15
+#echo './kill' | at 06:40
+#echo './zabjgroups 100' | at 06:45
+#echo './kill' | at 07:10
+#echo './zabjgroups 100' | at 07:15
+#echo './kill' | at 07:40
+#echo 'python moveFileCT.py time100' | at 07:45
+#echo './rmcsvCT' | at 07:50
+#echo './zabjgroups 125' | at 08:00
+#echo './kill' | at 08:30
+#echo './zabjgroups 125' | at 08:35
+#echo './kill' | at 09:05
+#echo './zabjgroups 125' | at 09:10
+#echo './kill' | at 09:40
+#echo './zabjgroups 125' | at 09:45
+#echo './kill' | at 10:10
+#echo 'python moveFileCT.py time125' | at 10:15
+#echo './rmcsvCT' | at 10:20
+#echo './runZab2P 83' | at 10:10
+#echo './kill' | at 10:30
+#echo './runZab2P 83' | at 10:35
+#echo './kill' | at 10:55
+exit
