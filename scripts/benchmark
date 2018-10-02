@@ -1,0 +1,40 @@
+#!/bin/bash
+#arr=(mill001 mill004 mill005 mill007 mill009 mill010 mill013 mill017 mill020 mill021)
+arr=(mill001 mill002 mill003 mill004 mill006 mill007 mill008 mill009 mill010 mill013)
+#mill002 mill003 mill004 mill006 mill007 mill008 mill009 mill010 mill013)
+geometry=10x24+10+40
+moveToZookeeper="cd /home/pg/p13/a6915654/bencmark/zookeeper-benchmark/"
+#moveToZookeeper="cd /home/pg/p13/a6915654/workspace9/zookeeper-benchmark-master/"
+#cleanUp="cd /; cd work; cd zookeeper; cd data; rm -rf version-2; cd ..; cd log; rm -rf version-2; cd ..; cd zookeeperlog; rm -r *.*; cd /; cd /home/pg/p13/a6915654; cd zookeeper6"
+#command="java -cp target/lib/*:target/*  --conf benchmark.conf"
+#command="java -cp target/lib/*:target/* benchmark.ZookeeperBenchmark --conf benchmark.conf"
+#command="./runBenchmark.sh $HOST"
+if [[ $# < 1 ]]; then
+	for ((i = 0; i < ${#arr[@]}; i++));do
+	     HOST="${arr[$i]}"
+	     command="./runBenchmark.sh $HOST"
+	     cleanUp="rm -r $HOST"
+	     if (( $i >= 0 )); then
+		ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no $HOST <<-ENDEXP
+		$moveToZookeeper
+		pwd
+		$cleanUp		
+		nohup $command > ${arr[$i]}.out 2> ${arr[$i]}.err < /dev/null &
+		gnome-terminal --geometry=10x24+10 --title "${arr[$i]}" "ssh -t -o ConnectTimeout=1 a6915654@${arr[$i]}.ncl.ac.uk " > output.txt   2>&1
+		exit
+		ENDEXP
+	     fi
+	done
+
+else
+	if [ $1 = "kill" ]; then
+	    for i in ${arr[@]}; do
+		if [ $i != ${arr[0]} ]; then
+		HOST="a6915654@$i"
+		ssh -t -o ConnectTimeout=1 $HOST 'pkill -u a6915654'
+		fi
+	    done
+	fi
+fi
+echo "Done"
+exit
