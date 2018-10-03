@@ -1,0 +1,17 @@
+#!/bin/bash
+cd /
+cd work
+cd zookeeper
+cd data
+rm -rf version-2
+cd ..
+cd log
+rm -rf version-2
+cd ..
+cd zookeeperlog
+rm -r *.*
+cd /
+cd /home/pg/p13/a6915654/zookeeper/zookeeper6
+
+
+
