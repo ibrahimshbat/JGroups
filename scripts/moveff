@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import os, sys
+from collections import defaultdict
+
+hosts = {'mill005'} #, 'mill005', 'mill006', 'mill008', 'mill010', 'mill011', 'mill013', 'mill004', 'mill016'}
+user = 'a6915654'
+
+
+#testfolder = 'flllZab5250'
+s_file_location = '/work/ZabAA/'
+d_file_location = '/work/ZabAA/'
+
+file_wildcard = '*'
+extension = ".*"
+s_get_file = s_file_location
+destination = d_file_location  + "/ALL/Follower1/"
+target = 'mill005'
+
+for hostname in hosts:
+    cmd = "scp " + user + "@" + hostname + ":" + s_get_file + " " + user + "@" + target + ":" + destination
+    print cmd
+    os.system(cmd)
+
+
+#os.system("rm *" + extension)
+#for hostname in hosts:
+#    cmd = "scp " + user + "@" + hostname + ":" + s_get_file + " " + user + "@" + target + ":" + destination
+#    print cmd
+#    os.system(cmd)
+#s_file_location = '/work/ZabAC/'
+#file_wildcard = '*'
+#extension = ".log"
+#s_get_file = s_file_location + file_wildcard + extension
+#for hostname in hosts:
+#    cmd = "scp " + user + "@" + hostname + ":" + s_get_file + " " + user + "@" + target + ":" + destination
+#   print cmd
+#    os.system(cmd)
