@@ -1,0 +1,17 @@
+#!/bin/bash
+arr=(mill001 mill004 mill006)
+geometry=10x24+10+40
+moveToABCast="cd /; cd work; cd a6915654; cd ABCast;"
+moveToZabCT="cd /; cd work; cd a6915654; cd ZabCT;"
+moveToZabCTRoot="cd /home/pg/p13/a6915654/ZabCT/;"
+command="rm -r *.*"
+	for ((i = 0; i < ${#arr[@]}; i++));do
+		HOST="${arr[$i]}"
+		   ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no $HOST <<-ENDEXP
+		   $moveToZabCT
+		   nohup $command < /dev/null &
+		ENDEXP
+
+	   done
+
+        exit
