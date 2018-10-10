@@ -1,0 +1,12 @@
+#!/bin/sh
+zabbox=(mill003 mill032 mill033 mill048 mill042 mill029 mill025 mill026 mill027 mill028)
+geometry=(30x6+1550-520 60x10+5-150 60x10+5-100 65x25+5-30 65x25+5-30)
+#30x6+1550-520
+#55x6+1240-320
+#55x6+1240-120
+#55x6+1240-0
+index=0
+node="mill001.ncl.ac.uk"
+gnome-terminal --geometry=${geometry[$index]} ssh $node
+
+
