@@ -1,0 +1,24 @@
+#!/bin/bash
+arr=(mill003 mill005 mill006 mill008 mill010 mill011 mill013 mill004 mill016)
+#arr=(mill006)
+geometry=10x24+10+40
+moveZab="cd /; cd work; cd Zab;"
+
+moveZabAC="cd /; cd work; cd ZabAC;"
+
+moveZabAA="cd /; cd work; cd ZabAA;"
+
+moveZabCT="cd /; cd work; cd ZabCoinTossing;"
+
+command="rm -r *.log"
+
+
+	for ((i = 0; i < ${#arr[@]}; i++));do
+		HOST="${arr[$i]}"
+		   ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no $HOST <<-ENDEXP
+		   $moveZabAC
+		   nohup $command < /dev/null &
+		ENDEXP
+
+	   done
+        exit
