@@ -1,0 +1,25 @@
+#!/bin/bash
+arr=(mill001 mill004 mill006)
+geometry=10x24+10+40
+moveToZab="cd /; cd work; cd Zab;"
+moveToZab2Phases="cd /; cd work; cd Zab2Phases;"
+movetZabCoinTossing="cd /; cd work; cd ZabCoinTossing; cd result; cd time100;"
+command="rm -r *.log"
+	for ((i = 0; i < ${#arr[@]}; i++));do
+		HOST="${arr[$i]}"
+		   ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no $HOST <<-ENDEXP
+		   $moveToZab2Phases
+		   nohup $command < /dev/null &
+		ENDEXP
+
+	   done
+command="rm -r *csv"
+	for ((i = 0; i < ${#arr[@]}; i++));do
+		HOST="${arr[$i]}"
+		   ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no $HOST <<-ENDEXP
+		   $moveToZab2Phases
+		   nohup $command < /dev/null &
+		ENDEXP
+
+	   done
+        exit
