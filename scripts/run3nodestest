@@ -1,0 +1,42 @@
+#!/bin/bash
+#-agentpath:/home/pg/p13/a6915654/jprofiler9/bin/linux-x64/libjprofilerti.so
+
+#zabbox=(mill001 mill004 mill006 mill003 mill002 mill005 mill007 mill009 mill010 mill013 mill017 mill019 mill020 mill025 mill022 mill024 mill021 #mill029 mill014 mill008 mill011 mill026)
+zabbox=(mill025 mill014 mill029)
+
+servers="mill025,mill014,mill029"
+geometry=(109x24+10+40 80x24+1060+40 65x25+5-30 65x25+631-30 65x25+1258-30)
+createDir="mkdir -p /work/a6915654/Zab/;"
+
+protocolName="ZabCoinTossing";
+config1="ZabCoinTossing.xml"
+config2="Zab2Phases.xml"
+config3="ZabCoinTossing.xml"
+config4="ZabClientHandler.xml"
+echo 'after conf'
+msgSize=1000
+warmupRequests=10000
+totalMessages=1000000
+numberOfMessages=$(($totalMessages / ${#zabbox[@]}))
+initiator=${zabbox[$((${#zabbox[@]} - 1))]} 
+lastNode=$((${#zabbox[@]} - 1))
+jvmMin="-Xms1000m"
+jvmMax="-Xmx3g"
+outDir="/home/pg/p13/a6915654/"
+for ((i = 0; i < ${#zabbox[@]}; i++));do
+   if [ $i -eq $lastNode ] && [ $(($totalMessages%${#zabbox[@]})) -ne 0 ]; then
+       let "numberOfMessages+=1"
+	echo 'in condtion'
+   fi
+use="java $jvmMin $jvmMax -Djava.net.preferIPv4Stack=true -cp .:./ABvsZabCT/dist/jgroups-3.6.0.Final.jar:./ABvsZabCT/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.InfiniteClients -warmup $warmupRequests -config $config3 -tmessages $totalMessages -nmessages $numberOfMessages -msgSize $msgSize -outputDir $outDir -nodes ${#zabbox[@]} -initiator $initiator"
+   output=" 2>&1 | tee $outDir${zabbox[$i]}.txt"
+   gnome-terminal --geometry=${geometry[$i]} --title "${zabbox[$i]}" -x bash -c "ssh -t -o ConnectTimeout=1  a6915654@${zabbox[$i]}.ncl.ac.uk '$use; bash'"
+
+   #gnome-terminal --geometry=${geometry[$i]} --title "${zabbox[$i]}" -x bash -c "ssh -t -o ConnectTimeout=1  a6915654@${zabbox[$i]}.ncl.ac.uk ' $command; bash'" > output.txt 2>&1
+   echo 'Before sleep'
+   sleep 3.0;
+done
+exit
+
+
+
