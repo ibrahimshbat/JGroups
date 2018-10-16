@@ -1,0 +1,85 @@
+#!/bin/bash
+arr=(mill003 mill005 mill006 mill008 mill010 mill011 mill013 mill004 mill016)
+#arr=(mill006)
+geometry=10x24+10+40
+moveZab1="cd /; cd work; cd Zab; cd R-0.0"
+moveZab2="cd /; cd work; cd Zab; cd R-0.1"
+moveZab3="cd /; cd work; cd Zab; cd R-0.2"
+moveZab4="cd /; cd work; cd Zab; cd R-0.3"
+moveZab5="cd /; cd work; cd Zab; cd R-0.4"
+moveZab6="cd /; cd work; cd Zab; cd R-0.5"
+moveZab7="cd /; cd work; cd Zab; cd R-0.6"
+moveZab8="cd /; cd work; cd Zab; cd R-0.7"
+moveZab9="cd /; cd work; cd Zab; cd R-0.8"
+moveZab10="cd /; cd work; cd Zab; cd R-0.9"
+moveZab11="cd /; cd work; cd Zab; cd R-0.25"
+moveZab12="cd /; cd work; cd Zab; cd R-0.75"
+moveZab13="cd /; cd work; cd Zab; cd R-1.0"
+
+moveZabCT1="cd /; cd work; cd ZabAA; cd R-0.0"
+moveZabCT2="cd /; cd work; cd ZabAA; cd R-0.1"
+moveZabCT3="cd /; cd work; cd ZabAA; cd R-0.2"
+moveZabCT4="cd /; cd work; cd ZabAA; cd R-0.3"
+moveZabCT5="cd /; cd work; cd ZabAA; cd R-0.4"
+moveZabCT6="cd /; cd work; cd ZabAA; cd R-0.5"
+moveZabCT7="cd /; cd work; cd ZabAA; cd R-0.6"
+moveZabCT8="cd /; cd work; cd ZabAA; cd R-0.7"
+moveZabCT9="cd /; cd work; cd ZabAA; cd R-0.8"
+moveZabCT10="cd /; cd work; cd ZabAA; cd R-0.9"
+moveZabCT25="cd /; cd work; cd ZabAA; cd R-0.25"
+moveZabCT75="cd /; cd work; cd ZabAA; cd R-0.75"
+moveZabCT100="cd /; cd work; cd ZabAA; cd R-1.0"
+
+moveZabAC1="cd /; cd work; cd ZabAC; cd R-0.0"
+moveZabAC2="cd /; cd work; cd ZabAC; cd R-0.25"
+moveZabAC3="cd /; cd work; cd ZabAC; cd R-0.5"
+moveZabAC4="cd /; cd work; cd ZabAC; cd R-0.75"
+moveZabAC5="cd /; cd work; cd ZabAC; cd R-1.0"
+moveZabAA1="cd /; cd work; cd ZabAA; cd R-0.0"
+moveZabAA2="cd /; cd work; cd ZabAA; cd R-0.25"
+moveZabAA3="cd /; cd work; cd ZabAA; cd R-0.5"
+moveZabAA4="cd /; cd work; cd ZabAA; cd R-0.75"
+moveZabAA5="cd /; cd work; cd ZabAA; cd R-1.0"
+#moveZabCT1="cd /; cd work; cd ZabCoinTossing; cd R-0.0"
+#moveZabCT2="cd /; cd work; cd ZabCoinTossing; cd R-0.25"
+#moveZabCT3="cd /; cd work; cd ZabCoinTossing; cd R-0.5"
+#moveZabCT4="cd /; cd work; cd ZabCoinTossing; cd R-0.75"
+#moveZabCT5="cd /; cd work; cd ZabCoinTossing; cd R-1.0"
+command="rm -r *.*"           
+	for ((i = 0; i < ${#arr[@]}; i++));do
+		HOST="${arr[$i]}"
+		   ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no $HOST <<-ENDEXP
+                   pwd
+		   $moveZab1
+                   pwd
+		   nohup $command < /dev/null &
+		   $moveZab2
+		   nohup $command < /dev/null &
+		   $moveZab3
+                   nohup $command < /dev/null &
+                   $moveZab4
+                   nohup $command < /dev/null &
+                   $moveZab5
+                   nohup $command < /dev/null &
+		   $moveZab6
+                   nohup $command < /dev/null &
+		   $moveZab7
+                   nohup $command < /dev/null &
+		   $moveZab8
+                   nohup $command < /dev/null &
+		   $moveZab9
+                   nohup $command < /dev/null &
+		   $moveZab10
+                   nohup $command < /dev/null &
+ 		   $moveZab11
+                   nohup $command < /dev/null &
+		   $moveZab12
+                   nohup $command < /dev/null &
+		   $moveZab13
+                   nohup $command < /dev/null &
+                   $moveZab14
+                   nohup $command < /dev/null &
+		ENDEXP
+
+	   done
+        exit
