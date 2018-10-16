@@ -1,0 +1,53 @@
+#!/bin/bash
+arr=(mill003 mill005 mill006 mill008 mill010 mill011 mill013 mill004 mill016)
+#arr=(mill006)
+
+moveZabCT1="cd /; cd work; cd ZabAA; cd R-0.0"
+moveZabCT2="cd /; cd work; cd ZabAA; cd R-0.1"
+moveZabCT3="cd /; cd work; cd ZabAA; cd R-0.2"
+moveZabCT4="cd /; cd work; cd ZabAA; cd R-0.3"
+moveZabCT5="cd /; cd work; cd ZabAA; cd R-0.4"
+moveZabCT6="cd /; cd work; cd ZabAA; cd R-0.5"
+moveZabCT7="cd /; cd work; cd ZabAA; cd R-0.6"
+moveZabCT8="cd /; cd work; cd ZabAA; cd R-0.7"
+moveZabCT9="cd /; cd work; cd ZabAA; cd R-0.8"
+moveZabCT10="cd /; cd work; cd ZabAA; cd R-0.9"
+moveZabCT100="cd /; cd work; cd ZabAA; cd R-0.0"
+moveZabCT25="cd /; cd work; cd ZabAA; cd R-0.25"
+moveZabCT75="cd /; cd work; cd ZabAA; cd R-0.75"
+
+
+command="rm -r *.*"           
+	for ((i = 0; i < ${#arr[@]}; i++));do
+		HOST="${arr[$i]}"
+		   ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no $HOST <<-ENDEXP
+		   $moveZabCT1
+		   nohup $command < /dev/null &
+                   $moveZabCT2
+		   nohup $command < /dev/null &
+		   $moveZabCT3
+                   nohup $command < /dev/null &
+                   $moveZabCT4
+                   nohup $command < /dev/null &
+                   $moveZabCT5
+                   nohup $command < /dev/null &
+		   $moveZabCT6
+                   nohup $command < /dev/null &
+		   $moveZabCT7
+                   nohup $command < /dev/null &
+		   $moveZabCT8
+                   nohup $command < /dev/null &
+		   $moveZabCT9
+                   nohup $command < /dev/null &
+		   $moveZabCT10
+                   nohup $command < /dev/null &
+		   $moveZabCT100
+                   nohup $command < /dev/null &
+                   $moveZabCT25
+                   nohup $command < /dev/null &
+		   $moveZabCT75
+                   nohup $command < /dev/null &
+		ENDEXP
+
+	   done
+        exit
