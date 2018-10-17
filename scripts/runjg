@@ -1,0 +1,19 @@
+#!/bin/bash
+geometry=(109x24+10+40 80x24+1060+40 65x25+5-30)
+#arr=(mill041 mill001 mill040 mill044 mill042)
+arr=(mill040 mill043)
+movetozookeeper="cd /home/pg/p13/a6915654/; cd workspace10; cd JGroups"
+#gnome-terminal--geometry=10x24+10 --title "${arr[$i]}" "ssh -t -o ConnectTimeout=1 a6915654@${arr[$i]}.ncl.ac.uk " > output.txt
+command="java -Djava.net.preferIPv4Stack=true -cp .:./dist/jgroups-3.6.0.Final.jar org.jgroups.demos.Chat -props ./conf/udp_sequence.xml"
+#command="java -Djava.net.preferIPv4Stack=true -cp .:./home/pg/p13/a6915654/workspace10/JGroups/dist/jgroups-3.6.0.Final.jar /classes/org.jgroups.demos.Chat -props ./conf/udp_sequence.xml"
+	for ((i = 0; i < ${#arr[@]}; i++));do
+		HOST="${arr[$i]}"
+		    cd /home/pg/p13/a6915654/
+		    cd workspace10
+                    cd JGroups
+                    pwd
+		    export NO_AT_BRIDGE=1
+                    gnome-terminal --geometry=${geometry[$i]} --title "${arr[$i]}" -x bash -c "ssh -t -o ConnectTimeout=1  a6915654@${arr[$i]}.ncl.ac.uk '$command; bash'"
+                    sleep 0.5;		
+	done
+exit
