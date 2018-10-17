@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /home/pg/p13/a6915654/workspace9/jgroups-master-example-master/target/
+java -Djava.net.preferIpv4Stack=true -jar jgroups-master-example-1.0-SNAPSHOT.jar
