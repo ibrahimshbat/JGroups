@@ -1,0 +1,57 @@
+#!/bin/bash
+#-agentpath:/home/pg/p13/a6915654/jprofiler9/bin/linux-x64/libjprofilerti.so
+#zabbox=(mill001 mill004 mill006 mill003 mill002 mill005 mill007 mill009 mill010 mill013 mill017 mill019 mill020 mill025 mill021 mill029 mill014 mill008 mill011 mill026n mill024 mill022)
+zabbox=(mill001 mill003 mill004 mill006 mill009 mill010 mill011 mill014 mill016 mill017 mill019 mill020 mill022)
+
+
+servers="mill001,mill003,mill004"
+geometry=(55x6+10-1200 55x6+10-320 55x6+10-120 55x6+10-0 55x6+10-0 55x6+650-1200 55x6+650-320 55x6+650-120 55x6+650-0 55x6+650-0 55x6+1290-320 55x6+1290-120 55x6+1290-0)
+protocolName="Zab";
+config="Zab.xml"
+
+
+totalMessages=1000000
+numOfClients=10
+numbersThreads=10
+numberOfMessagesPerClients=$(($totalMessages /$numOfClients))
+numberOfMessages=$(($numberOfMessagesPerClients /$numbersThreads))
+msgSize=1000
+serverLoad=0
+warmupRequests=10000
+waemupRPerThread=$(($warmupRequests /$numbersThreads))
+
+move="cd /home/pg/p13/a6915654/JGroups/;"
+outDir='/work/ZabClient/'
+sendTime=$1
+initiator=${zabbox[$((${#zabbox[@]} - 1))]} 
+lastNode=$((${#zabbox[@]} - 1))
+jvmMin="-Xms1000m"
+jvmMax="-Xmx3g"
+channelName="zabccc"
+readPercent=0.0
+command="java $jvmMin -Djava.net.preferIPv4Stack=true -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.zabclient.ZabTestThreads -warmup $waemupRPerThread -load $serverLoad -config $config -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClient $numOfClients -sTime $sendTime -channel $channelName -read $readPercent -init $initiator"
+
+command1="java $jvmMin -Djava.net.preferIPv4Stack=true -agentpath:/home/pg/p13/a6915654/jprofiler9/bin/linux-x64/libjprofilerti.so=port=8850 -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.zabclient.ZabTestThreads -warmup $waemupRPerThread -load $serverLoad -config $config -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClients $numOfClients -sTime $sendTime -channel $channelName -read $readPercent -init $initiator"
+
+
+outDir="/home/pg/p13/a6915654/"
+for ((i = 0; i < ${#zabbox[@]}; i++));do
+ if [ "$i" -eq "0" ]; then
+	use=$command1;
+	sleept=6.0;
+   else
+        use=$command;
+	sleept=2.0;
+   fi
+    HOST="a6915654@${zabbox[$i]}"
+   # ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no  $HOST <<-ENDEXP
+    #nohup $command > $output${zabbox[$i]}.out 2> $output${zabbox[$i]}.err < /dev/null &
+    #exit
+#ENDEXP
+       gnome-terminal --geometry=${geometry[$i]} --title "${zabbox[$i]}" -x bash -c "ssh -t -o ConnectTimeout=1  a6915654@${zabbox[$i]}.ncl.ac.uk '$use; bash'"
+       sleep $sleept;
+   done
+exit
+
+
+
