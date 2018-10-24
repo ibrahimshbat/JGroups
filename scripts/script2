@@ -1,0 +1,17 @@
+#!/bin/bash 
+time=$1 
+echo '$time'
+move="cd /home/pg/p13/a6915654/auto/"
+#f1="f1.txt"
+#f2="f2.txt"
+#f3="f3.txt"
+#f4="f4.txt"
+#pwd
+$move
+#pwd
+echo "$time" > f2.txt
+#touch f1.txt 
+#touch f2.txt 
+#touch f3.txt 
+#touch f4.txt 
+exit
