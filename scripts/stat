@@ -1,0 +1,6 @@
+#!/bin/sh
+echo stat | nc mill041 2181
+echo stat | nc mill046 2181
+echo stat | nc mill040 2181
+#echo stat | nc mill044 2181
+#echo stat | nc mill042 2181
