@@ -1,0 +1,44 @@
+#!/bin/bash
+#zabbox=(mill001 mill002 mill004 mill006 mill013 mill009 mill016 mill019 mill010 mill020 mill021 mill022 mill024 mill025)
+#-agentpath:/home/pg/p13/a6915654/jprofiler9/bin/linux-x64/libjprofilerti.so
+#zabbox=(mill001 mill004 mill006 mill003 mill002 mill005 mill007 mill009 mill010 mill013 mill017 mill019 mill020 mill025 mill022 mill024 mill021 mill029 mill014 mill008 mill011 mill026)
+zabbox=(mill001 mill004 mill006 mill003 mill002 mill005 mill007 mill009 mill010 mill013 mill017 mill019 mill020)
+
+servers="mill001,mill004,mill006"
+geometry=(55x6+10-1200 55x6+10-320 55x6+10-120 55x6+10-0 55x6+10-0 55x6+650-1200 55x6+650-320 55x6+650-120 55x6+650-0 55x6+650-0 55x6+1290-320 55x6+1290-120 55x6+1290-0 55x6+1290-0 55x6+1290-0 55x6+1290-0 55x6+1290-0 55x6+1290-0 55x6+1290-0 55x6+1290-0 55x6+1290-0 55x6+1290-0 55x6+1290-0)
+
+protocolName="Zab";
+config1="Zab.xml"
+
+clustersize=3
+totalMessages=1000000
+numOfClients=10
+numbersThreads=10
+numberOfMessagesPerClients=$(($totalMessages /$numOfClients))
+numberOfMessages=$(($numberOfMessagesPerClients /$numbersThreads))
+msgSize=1000
+serverLoad=0
+warmupRequests=10000
+warmupRPerThread=$(($warmupRequests /$numbersThreads))
+
+outDir="/home/pg/p13/a6915654/$protocolName/"
+output="/home/pg/p13/a6915654/output"
+sendTime=100
+initiator=${zabbox[$((${#zabbox[@]} - 1))]} 
+jvmMin="-Xms1000m"
+echo $initiator
+command="java $jvmMin -Djava.net.preferIPv4Stack=true -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.ZabTestThreads -warmup $warmupRPerThread -load $serverLoad -config $config1 -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClients $numOfClients -sTime $sendTime -init $initiator"
+
+for ((i = 0; i < ${#zabbox[@]}; i++));do
+    HOST="a6915654@${zabbox[$i]}"
+    #gnome-terminal --geometry=${geometry[$i]} --title "${zabbox[$i]}" -x bash -c "ssh -t -o ConnectTimeout=1  $HOST '$command; bash'" 
+    ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no  $HOST <<-ENDEXP
+    nohup $command > $output${zabbox[$i]}.out 2> $output${zabbox[$i]}.err < /dev/null &
+    exit
+ENDEXP
+
+       sleep 3.0;
+   done
+exit
+
+
