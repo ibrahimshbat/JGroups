@@ -2,6 +2,9 @@ package org.jgroups.protocols.jzookeeper.zabCT;
 
 import java.util.Random;
 
+/*
+ * Class ZUtill allows follower to make a dicssion whether to send an ACK or not.
+ */
 public class ZUtil {
 
 	private double  p = 1.0;//0.634;//0.5;//0.6339745962155613;//1.0;//
@@ -10,29 +13,20 @@ public class ZUtil {
 	static boolean sendAck = false;
 
 
-
 	public ZUtil(double p) {
 		this.p = p;
 	}
 
-
-
 	public boolean SendAckOrNoSend(){
-
-
 		randomValue=random.nextDouble();
 		//TO check whether to send Ack or not
 		return randomValue <= p? true : false;
 
 	}
 
-
-
 	public double getP() {
 		return p;
 	}
-
-
 
 	public  void setP(double p) {
 		this.p = p;
