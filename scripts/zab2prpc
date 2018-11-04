@@ -1,0 +1,67 @@
+#!/bin/bash
+#zabbox=(mill001 mill002 mill004 mill006 mill013 mill009 mill016 mill019 mill010 mill020 mill021 mill022 mill024 mill025)
+#abbox=(mill001 mill004 mill006 mill002 mill003 mill005 mill009 mill013 mill014 mill016 mill017 mill019 mill020 mill025 mill022 mill024 mill025 mill021)
+#-agentpath:/home/pg/p13/a6915654/jprofiler9/bin/linux-x64/libjprofilerti.so=port=8851
+#zabbox=(mill001 mill002 mill003 mill004 mill005 mill006 mill007 mill008 mill009 mill010 mill011 mill014 mill016 mill017 mill019 mill020 mill023 mill025 mill029)
+zabbox=(mill001 mill002 mill003 mill004 mill005 mill006 mill007 mill008 mill009 mill010 mill011 mill014 mill016)
+servers="mill003,mill004,mill005"
+#servers="mill003,mill004,mill005,mill006,mill007,mill008,mill009,mill010,mill011"
+#zabbox=(mill001 mill003 mill004 mill005 mill006 mill007 mill010 mill011 mill016 mill017 mill020 mill025 mill029)
+geometry=(55x6+10-1200 55x6+10-320 55x6+10-120 55x6+10-0 55x6+10-0 55x6+650-1200 55x6+650-320 55x6+650-120 55x6+650-0 55x6+650-0 55x6+1290-320 55x6+1290-120 55x6+1290-0 55x6+1290-120 55x6+1290-0 55x6+1290-0 55x6+1290-120 55x6+1290-0)
+protocolName="Zab2Phases";
+config1="Zab.xml"
+config2="Zab2Phases.xml"
+config3="ZabCoinTossing.xml"
+config4="ZabInfinspan.xml"
+config5="Zab2PInfinspan.xml"
+clientConfig="CSInteraction.xml"
+timeout=20
+syn="true"
+totalMessages=1000000
+
+numOfClients=10
+
+numbersThreads=25
+numberOfMessagesPerClients=$(($totalMessages /$numOfClients))
+numberOfMessages=$(($numberOfMessagesPerClients /$numbersThreads))
+msgSize=1000
+serverLoad=0
+warmupRequests=10000
+waemupRPerThread=$(($warmupRequests /$numbersThreads))
+move="cd /home/pg/p13/a6915654/workspace10/zabclients/JGroups/;"
+outDir="/work/Zab2PInfinispan/"
+
+initiator=${zabbox[$((${#zabbox[@]} - 1))]} 
+jvmMin="-Xms1000m"
+jvmMax="-Xmx3g"
+channelName="Zab2oodt"
+rf=9
+clusterSize=3
+command1="java $jvmMin -Djava.net.preferIPv4Stack=true -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.zab1P.Zab2PInfinispan -warmup $waemupRPerThread -load $serverLoad -config $config5 -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClients $numOfClients -timeout $timeout -syn $syn -channel $channelName -init $initiator -RF $rf -clusterSize $clusterSize"
+
+command2="java $jvmMin -Djava.net.preferIPv4Stack=true -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.zab1P.Zab2PInfinispan -warmup $waemupRPerThread -load $serverLoad -config $config5 -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClients $numOfClients -timeout $timeout -syn $syn -channel $channelName -init $initiator -RF $rf -clusterSize $clusterSize"
+
+command3="java $jvmMin -Djava.net.preferIPv4Stack=true -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.zab1P.Zab2PInfinispan -warmup $waemupRPerThread -load $serverLoad -config $clientConfig -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClients $numOfClients -timeout $timeout -syn $syn -channel $channelName -init $initiator -RF $rf -clusterSize $clusterSize"
+
+for ((i = 0; i < ${#zabbox[@]}; i++));do
+
+if [ "$i" -eq "2" ]; then 
+        use=$command1;
+	sleept=6.0;
+elif ([ "$i" -eq "3" ] || [ "$i" -eq "4" ]); then
+	use=$command2;
+	sleept=2.0;
+else
+        use=$command3;
+	sleept=2.0;
+   fi
+    HOST="a6915654@${zabbox[$i]}"
+    #ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no  $HOST <<-ENDEXP
+   #nohup $use > $output${zabbox[$i]}.out 2> $output${zabbox[$i]}.err < /dev/null &
+   # exit
+#ENDEXP
+      gnome-terminal --geometry=${geometry[$i]} --title "${zabbox[$i]}" -x bash -c "ssh -t -o ConnectTimeout=1  a6915654@${zabbox[$i]}.ncl.ac.uk '$use; bash'"
+      sleep $sleept;
+   done
+exit
+
