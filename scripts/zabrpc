@@ -1,0 +1,104 @@
+#!/bin/bash
+# -agentpath:/home/pg/p13/a6915654/jprofiler9/bin/linux-x64/libjprofilerti.so=port=8849,offline,id=111,config=/home/pg/p13/a6915654/jprofiler9/config.xml
+#-agentpath:/home/pg/p13/a6915654/jprofiler9/bin/linux-x64/libjprofilerti.so=port=8849,offline,id=111,config=/home/pg/p13/a6915654/jprofiler9/config.xml
+# -agentpath:bin/linux-x64/libjprofilerti.jnilib=port=8849,offline,id=<session-id>,config=config.xml
+# -agentpath:/home/pg/p13/a6915654/jprofiler9/bin/linux-x64/libjprofilerti.so=port=8849,offline,id=109,config=/home/pg/p13/a69156ss54/jprofiler9/config.xml
+
+clusterSize=9
+#zabbox=(mill001 mill002 mill003 mill005 mill006 mill008 mill010 mill011 mill013 mill004 mill016 mill017 mill029)
+#zabbox=(mill001 mill002 mill003 mill005 mill006 mill008 mill010 mill011 mill013 mill004 mill016 mill017 mill019 mill020 mill029)
+#zabbox=(mill001 mill002 mill003 mill005 mill006 mill008 mill010 mill011 mill013 mill004 mill016 mill017 mill019 mill020 mill022 mill024 mill029)
+zabbox=(mill001 mill002 mill003 mill005 mill006 mill008 mill010 mill011 mill013 mill004 mill016 mill017 mill019 mill020 mill022 mill024 mill025 mill026 mill029)
+
+#servers="mill003,mill005,mill006" #,mill008,mill010,mill011,mill013" #,mill004,mill016" 
+#servers="mill003,mill005,mill006,mill008,mill010" #,mill011,mill013" #,mill004,mill016" 
+#servers="mill003,mill005,mill006,mill008,mill010,mill011,mill013" #,mill004,mill016" 
+servers="mill003,mill005,mill006,mill008,mill010,mill011,mill013,mill004,mill016" 
+#geometry=(55x6+10-1200 55x6+10-320 55x6+10-120 55x6+10-0 55x6+10-0 55x6+650-1200 55x6+650-320 55x6+650-120 55x6+650-0 55x6+650-0 55x6+1290-320 55x6+1290-120 55x6+1290-0 55x6+1290-120 55x6+1290-0 55x6+1290-0 55x6+1290-120 55x6+1290-0 55x6+1290-0)
+geometry=(52x5+5-1200 52x5+5-225 52x5+5-75 52x5+5-0 52x5+5-0 52x5+505-1200 52x5+505-225 52x5+505-75 52x5+505-0 52x5+505-0 52x5+1000-1200 52x5+1000-225 52x5+1000-75 52x5+1000-0 52x5+1000-0 52x5+1000-0 52x5+1000-120 52x5+1000-0 52x5+1000-0)
+
+#ratio=$1
+protocolName="ZabCoinTossing";
+config1="Zab.xml"
+config2="Zab2Phases.xml"
+config3="ZabCoinTossing.xml"
+config4="ZabInfinspan.xml"
+clientConfig="CSInteraction.xml"
+timeout=20
+waitCLient=100
+waitInvoker=100
+waitSent=50
+threshold=200
+#folder="zabCT_AdaptationUsingWriteRatio"
+#folder="zabCT_AdaptationUsingWriteRatioV1"
+#folder="zabCT_AdaptationUsingWriteRatioSync"
+#folder="zabCT_AdaptationUsingWriteRatioSyncV1"
+#folder="zabCT_AdaptationUsingWriteRatioSyncV2"
+#folder="zabCT_AdaptationUsingWriteRatioSyncV3"
+#folder="zabCTandAAandRW"
+#folder="zabNRWUsingWriteRatio"
+#folder="zabNRW100WriteRatio"
+#folder="zabNRW100WriteRatioAsync"
+#folder="zabNRW"
+#folder="zabACRWAsync"
+#folder="zabACRWForEDCC"
+#folder="zabACRWForEDCC200000"
+#folder="zabNRWEDCC"
+#folder="zabNRWEDCC200000"
+#folder="zabAARWEDCC"
+folder="zabAARWEDCC200000"
+#folder="zabNRWEDCCAsync"
+
+syn="true"
+#totalMessages=1010000
+totalMessages=1000000
+numOfClients=10
+
+numbersThreads=50
+numberOfMessagesPerClients=$(($totalMessages /$numOfClients))
+numberOfMessages=$(($numberOfMessagesPerClients /$numbersThreads))
+msgSize=1000
+serverLoad=0
+warmupRequests=10000
+
+move="cd /home/pg/p13/a6915654/workspace10/zabclients/JGroups/;"
+outDir="/work/Zab2PNInfinispan/"
+
+initiator=${zabbox[$((${#zabbox[@]} - 1))]} 
+jvmMin="-Xms1000m"
+jvmMax="-Xmx3g"//Sync
+
+channelName="zabbct"
+readPercent=0.0
+#readPercent=$ratio
+#0.9
+rf=2
+
+command1="java $jvmMin -Djava.net.preferIPv4Stack=true -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.$folder.ZabInfinispan -warmup $warmupRequests -load $serverLoad -config $config4 -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClients $numOfClients -timeout $timeout -syn $syn -channel $channelName -init $initiator -RF $rf -clusterSize $clusterSize -read $readPercent -waitC $waitCLient -waitIn $waitInvoker -waitSS $waitSent"
+
+command2="java $jvmMin -Djava.net.preferIPv4Stack=true -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.$folder.ZabInfinispan -warmup $warmupRequests -load $serverLoad -config $config4 -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClients $numOfClients -timeout $timeout -syn $syn -channel $channelName -init $initiator -RF $rf -clusterSize $clusterSize -read $readPercent -waitC $waitCLient -waitIn $waitInvoker -waitSS $waitSent"
+
+command3="java $jvmMin -Djava.net.preferIPv4Stack=true -cp .:./JGroups/dist/jgroups-3.6.0.Final.jar:./JGroups/dist/guava-19.0.jar org.jgroups.protocols.jzookeeper.$folder.ZabInfinispan -warmup $warmupRequests -load $serverLoad -config $clientConfig -hosts $servers -name $protocolName -tmessages $totalMessages -nmessages $numberOfMessages -threads $numbersThreads -msgSize $msgSize -outputDir $outDir -numClients $numOfClients -timeout $timeout -syn $syn -channel $channelName -init $initiator -RF $rf -clusterSize $clusterSize -read $readPercent -waitC $waitCLient -waitIn $waitInvoker -waitSS $waitSent -thresh $threshold"
+
+for ((i = 0; i < ${#zabbox[@]}; i++));do
+
+if [ "$i" -eq "2" ]; then 
+        use=$command1;
+	sleept=6.0;
+elif ([ "$i" -eq "3" ] || [ "$i" -eq "4" ] || [ "$i" -eq "5" ] || [ "$i" -eq "6" ] || [ "$i" -eq "7" ] || [ "$i" -eq "8" ] || [ "$i" -eq "9" ] || [ "$i" -eq "10" ] ) ; then #
+	use=$command2;
+	sleept=2.0;
+else
+        use=$command3;
+	sleept=1.0;
+   fi
+   HOST="a6915654@${zabbox[$i]}"
+  ssh -T -o ConnectTimeout=1 -o StrictHostKeychecking=no  $HOST <<-ENDEXP
+nohup $use > $output${zabbox[$i]}.out 2> $output${zabbox[$i]}.err < /dev/null &
+  exit
+ENDEXP
+       #gnome-terminal --geometry=${geometry[$i]} --title "${zabbox[$i]}" -x bash -c "ssh -t -o ConnectTimeout=1  a6915654@${zabbox[$i]}.ncl.ac.uk '$use; bash'"
+    sleep $sleept;
+   done
+exit
+
