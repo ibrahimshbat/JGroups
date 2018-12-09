@@ -1,0 +1,5 @@
+#!/bin/sh
+cd /home/pg/p13/a6915654
+cd zookeeper
+cd zookeeper6
+bin/zkServer.sh start
